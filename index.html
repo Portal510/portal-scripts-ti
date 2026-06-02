@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Central de Suporte em TI — Scripts de Conhecimento</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --blue:#185FA5;--blue-lt:#E6F1FB;--blue-dk:#0C447C;--blue-mid:#378ADD;
+  --green:#3B6D11;--green-lt:#EAF3DE;
+  --amber:#854F0B;--amber-lt:#FAEEDA;
+  --red:#A32D2D;--red-lt:#FCEBEB;
+  --g50:#F7F8FA;--g100:#EDEEF0;--g200:#D5D7DC;--g400:#8F929B;--g700:#3E4148;--g900:#14161A;
+  --white:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--g50);color:var(--g900);font-size:14px;line-height:1.5;}
+
+/* NAV */
+.topnav{background:var(--white);border-bottom:1px solid var(--g100);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.07);width:100%;}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo{width:32px;height:32px;background:var(--blue);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.logo svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2;}
+.bname{font-size:14px;font-weight:600;}
+.bsub{font-size:11px;color:var(--g400);}
+.nav-tabs{display:flex;gap:2px;}
+.ntab{padding:6px 13px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:var(--g400);border-radius:6px;font-family:inherit;transition:all .15s;}
+.ntab.active{background:var(--blue-lt);color:var(--blue-dk);}
+.ntab:hover:not(.active){background:var(--g50);color:var(--g700);}
+
+/* PAGES */
+.page{display:none;}.page.active{display:block;animation:fi .18s ease;}
+.main{width:100%;padding:22px 18px;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px;}
+.scard{background:var(--white);border:1px solid var(--g100);border-radius:10px;padding:14px 16px;}
+.slbl{font-size:11px;font-weight:500;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.snum{font-size:26px;font-weight:600;line-height:1;}
+.nb{color:var(--blue);}.ng{color:var(--green);}.na{color:var(--amber);}.nw{color:var(--g700);}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.sw{flex:1;min-width:180px;display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--g200);border-radius:8px;padding:0 10px;}
+.sw:focus-within{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1);}
+.sw svg{width:14px;height:14px;stroke:var(--g400);fill:none;flex-shrink:0;}
+.sw input{border:none;background:transparent;font-size:13px;color:var(--g900);font-family:inherit;width:100%;padding:8px 0;outline:none;}
+.sw input::placeholder{color:var(--g400);}
+select.flt{padding:8px 10px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:8px;background:var(--white);color:var(--g700);}
+.btn{padding:8px 14px;font-size:13px;font-weight:500;font-family:inherit;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid var(--g200);background:var(--white);color:var(--g700);}
+.btn:hover{background:var(--g50);}
+.btn.prim{background:var(--blue);color:var(--white);border-color:var(--blue);}
+.btn.prim:hover{background:var(--blue-dk);}
+.btn.dng{background:var(--red-lt);color:var(--red);border-color:#f09595;}
+.btn.dng:hover{background:#f7c1c1;}
+.btn.amb{background:var(--amber-lt);color:var(--amber);border-color:#EF9F27;}
+
+/* TABLES */
+.tcard{background:var(--white);border:1px solid var(--g100);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:20px;}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--g50);}
+th{padding:10px 13px;font-size:11px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid var(--g100);}
+td{padding:10px 13px;border-bottom:1px solid var(--g100);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--g50);}
+.tc-n{font-family:monospace;font-size:12px;color:var(--g400);}
+.tc-t{font-weight:500;color:var(--blue);cursor:pointer;}
+.tc-t:hover{text-decoration:underline;}
+.tc-s{font-size:12px;color:var(--g400);}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
+.tag::before{content:'';width:5px;height:5px;border-radius:50%;}
+.tag.at{background:var(--green-lt);color:var(--green);}.tag.at::before{background:var(--green);}
+.tag.rs{background:var(--amber-lt);color:var(--amber);}.tag.rs::before{background:var(--amber);}
+.tag.rv{background:var(--blue-lt);color:var(--blue-dk);}.tag.rv::before{background:var(--blue);}
+.tag.ar{background:var(--g100);color:var(--g400);}.tag.ar::before{background:var(--g400);}
+.tag.pend{background:var(--amber-lt);color:var(--amber);}.tag.pend::before{background:var(--amber);}
+.tag.and{background:var(--blue-lt);color:var(--blue-dk);}.tag.and::before{background:var(--blue);}
+.tag.conc{background:var(--green-lt);color:var(--green);}.tag.conc::before{background:var(--green);}
+.tag.canc{background:var(--g100);color:var(--g400);}.tag.canc::before{background:var(--g400);}
+/* CONCLUDED CARD */
+.conc-card{background:var(--white);border:1px solid #97C459;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.conc-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--green-lt);border-bottom:1px solid #97C459;}
+.conc-card-title{font-size:13px;font-weight:600;color:var(--green);}
+.conc-card-body{padding:16px;}
+.conc-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px;}
+.conc-field{background:var(--g50);border-radius:8px;padding:10px 12px;}
+.conc-flbl{font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.conc-fval{font-size:13px;color:var(--g900);}
+.email-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.email-sent{background:var(--green-lt);color:var(--green);border:1px solid #97C459;}
+.email-not{background:var(--g100);color:var(--g400);border:1px solid var(--g200);}
+
+.sol-sel{padding:5px 8px;font-size:12px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);cursor:pointer;transition:border .15s;}
+.sol-sel:focus{outline:none;border-color:var(--blue-mid);}
+.sol-sel.pend{border-color:#EF9F27;background:var(--amber-lt);color:var(--amber);font-weight:600;}
+.sol-sel.and{border-color:var(--blue-mid);background:var(--blue-lt);color:var(--blue-dk);font-weight:600;}
+.sol-sel.conc{border-color:#97C459;background:var(--green-lt);color:var(--green);font-weight:600;}
+.sol-sel.canc{border-color:var(--g200);background:var(--g100);color:var(--g400);font-weight:600;}
+.ract{display:flex;gap:4px;}
+.ib{width:28px;height:28px;border:1px solid var(--g200);border-radius:6px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--g400);transition:all .15s;}
+.ib svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+.ib:hover{background:var(--g50);color:var(--g700);}
+.ib.del:hover{background:var(--red-lt);color:var(--red);border-color:#f09595;}
+.ib.ok:hover{background:var(--green-lt);color:var(--green);border-color:#97C459;}
+.empty{text-align:center;padding:36px;color:var(--g400);font-size:13px;font-style:italic;}
+
+/* DETAIL PANEL */
+.dpanel{background:var(--white);border:1px solid var(--g100);border-radius:12px;padding:22px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:20px;display:none;}
+.dpanel.show{display:block;}
+.dp-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:12px;}
+.dp-title{font-size:15px;font-weight:600;}
+.dp-acts{display:flex;gap:8px;flex-shrink:0;}
+
+/* PENDING PANEL */
+.ppanel{background:var(--white);border:1px solid #EF9F27;border-radius:12px;overflow:visible;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:20px;}
+.ppanel .tbl-scroll{overflow-x:auto;}
+.ppanel-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--amber-lt);border-bottom:1px solid #EF9F27;border-radius:12px 12px 0 0;}
+.ppanel-title{font-size:13px;font-weight:600;color:var(--amber);display:flex;align-items:center;gap:8px;}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 1.4s infinite;}
+
+/* MODELO FIEL */
+.mwrap{background:var(--white);border:1px solid var(--g100);border-radius:12px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.mhdr{font-size:17px;font-weight:700;text-decoration:underline;margin-bottom:18px;color:var(--g900);}
+.mtable{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}
+.mtable td{border:1px solid #aaa;padding:0;vertical-align:top;}
+.mtable .lbl{background:#f0f0f0;font-weight:700;padding:6px 10px;white-space:nowrap;width:185px;font-size:13px;}
+.mtable .val{padding:0;}
+.mtable .val input,.mtable .val textarea,.mtable .val select{width:100%;border:none;background:transparent;font-size:13px;font-family:'Verdana',sans-serif;padding:6px 10px;outline:none;color:var(--g900);resize:none;}
+.mtable .val input:focus,.mtable .val textarea:focus{background:#FAFBFF;}
+.mtable .resval{padding:0;}
+.mtable .resval textarea{width:100%;border:none;background:transparent;font-size:9pt;font-family:'Verdana',sans-serif;padding:8px 10px;outline:none;color:var(--g900);resize:none;min-height:150px;line-height:1.6;}
+.mtable .resval textarea:focus{background:#FAFBFF;}
+.fhint{background:#f0f0f0;font-size:11px;color:#666;padding:4px 10px;border-right:1px solid #aaa;font-style:italic;min-width:115px;}
+.itable{width:100%;border-collapse:collapse;}
+.itable td{border:none;border-right:1px solid #aaa;padding:0;}
+.itable td:last-child{border-right:none;}
+.itable .ilbl{background:#f5f5f5;font-weight:600;font-size:12px;padding:5px 10px;border-bottom:1px solid #aaa;}
+.itable .ival input{width:100%;border:none;background:transparent;font-family:'Verdana',sans-serif;font-size:13px;padding:6px 10px;outline:none;color:var(--g900);}
+.itable .ival input:focus{background:#FAFBFF;}
+.atable{width:100%;border-collapse:collapse;font-size:13px;}
+.atable th{border:1px solid #aaa;background:#f0f0f0;font-weight:700;padding:6px 10px;text-align:left;}
+.atable td{border:1px solid #aaa;padding:0;}
+.atable td input{width:100%;border:none;background:transparent;font-family:'Verdana',sans-serif;font-size:13px;padding:6px 10px;outline:none;color:var(--g900);}
+.atable td input:focus{background:#FAFBFF;}
+.atable td.tdel{width:32px;text-align:center;}
+.atable td.tdel button{width:24px;height:24px;border:none;background:transparent;cursor:pointer;color:#aaa;font-size:15px;margin:auto;display:flex;align-items:center;justify-content:center;}
+.atable td.tdel button:hover{color:var(--red);}
+.slbl{font-weight:700;font-size:13px;margin:16px 0 6px;}
+.addrow{font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px 0;font-family:inherit;margin-top:6px;}
+.addrow:hover{text-decoration:underline;}
+.faction{display:flex;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--g100);justify-content:flex-end;flex-wrap:wrap;}
+
+/* FORM GENÉRICO */
+.fwrap{background:var(--white);border:1px solid var(--g100);border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.fwrap-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+.fwrap-sub{font-size:12px;color:var(--g400);margin-bottom:20px;line-height:1.6;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--g400);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em;}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);transition:border .15s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1);}
+.fg textarea{resize:vertical;min-height:90px;line-height:1.6;}
+.fgrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.infobox{background:var(--blue-lt);border:1px solid #B8D4F0;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue-dk);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;}
+.infobox svg{width:14px;height:14px;stroke:var(--blue);fill:none;flex-shrink:0;margin-top:1px;}
+.toast{display:none;align-items:center;gap:10px;background:var(--green-lt);border:1px solid #97C459;border-radius:8px;padding:11px 14px;font-size:13px;color:var(--green);font-weight:500;margin-top:12px;}
+.toast.show{display:flex;}
+.toast svg{width:15px;height:15px;stroke:var(--green);fill:none;flex-shrink:0;}
+.prio-row{display:flex;gap:8px;}
+.pb{padding:5px 15px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--g200);background:var(--white);cursor:pointer;font-family:inherit;transition:all .15s;color:var(--g400);}
+.pb.slb{background:var(--green-lt);color:var(--green);border-color:#97C459;}
+.pb.slm{background:var(--amber-lt);color:var(--amber);border-color:#EF9F27;}
+.pb.sla{background:var(--red-lt);color:var(--red);border-color:#F09595;}
+
+/* CONFIRM OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(20,22,26,.45);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.overlay.show{display:flex;}
+.modal{background:var(--white);border-radius:12px;padding:22px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.15);}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--g100);}
+.mtitle{font-size:15px;font-weight:600;}
+.mx{width:28px;height:28px;border:none;background:transparent;cursor:pointer;font-size:19px;color:var(--g400);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.mx:hover{background:var(--g100);}
+.mbody{font-size:13px;color:var(--g400);line-height:1.6;}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* LOGIN SCREEN */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0C447C 0%,#185FA5 50%,#378ADD 100%);padding:20px;}
+.login-card{background:var(--white);border-radius:16px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.login-logo{width:52px;height:52px;background:var(--blue);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.login-logo svg{width:28px;height:28px;fill:none;stroke:#fff;stroke-width:2;}
+.login-title{font-size:18px;font-weight:600;text-align:center;color:var(--g900);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--g400);text-align:center;margin-bottom:28px;}
+.login-tabs{display:flex;gap:0;border:1px solid var(--g200);border-radius:8px;overflow:hidden;margin-bottom:22px;}
+.login-tab{flex:1;padding:8px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;font-family:inherit;color:var(--g400);transition:all .15s;}
+.login-tab.active{background:var(--blue);color:var(--white);}
+.login-field{margin-bottom:14px;}
+.login-field label{display:block;font-size:12px;font-weight:600;color:var(--g400);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em;}
+.login-field input{width:100%;padding:10px 12px;font-size:14px;font-family:inherit;border:1px solid var(--g200);border-radius:8px;background:var(--white);color:var(--g900);transition:border .15s;}
+.login-field input:focus{outline:none;border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(55,138,221,.12);}
+.login-btn{width:100%;padding:11px;background:var(--blue);color:var(--white);border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;transition:all .15s;}
+.login-btn:hover{background:var(--blue-dk);}
+.login-err{display:none;background:var(--red-lt);border:1px solid #f09595;border-radius:6px;padding:9px 12px;font-size:13px;color:var(--red);margin-top:10px;text-align:center;}
+.login-err.show{display:block;}
+
+/* USER BADGE */
+.user-info{display:flex;align-items:center;gap:8px;}
+.user-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.ua-gestao{background:var(--blue-lt);color:var(--blue-dk);}
+.ua-colab{background:var(--green-lt);color:var(--green);}
+.user-role{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.ur-gestao{background:var(--blue-lt);color:var(--blue-dk);}
+.ur-colab{background:var(--green-lt);color:var(--green);}
+.logout-btn{border:1px solid var(--g200);background:transparent;padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--g400);transition:all .15s;}
+.logout-btn:hover{background:var(--g50);}
+
+/* READ-ONLY OVERLAY for gestao page */
+.readonly-banner{display:none;background:var(--blue-lt);border:1px solid #B8D4F0;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--blue-dk);margin-bottom:16px;align-items:center;gap:8px;}
+.readonly-banner.show{display:flex;}
+
+@media(max-width:600px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .fgrow{grid-template-columns:1fr;}
+  .topnav{padding:0 12px;}
+  .main{padding:14px 10px;}
+  .mtable .lbl{width:110px;}
+  .nav-tabs{gap:1px;}
+  .ntab{padding:5px 8px;font-size:12px;}
+  .login-card{padding:28px 20px;}
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+
+<!-- ========== TELA DE LOGIN ========== -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="login-title">Central de Suporte em TI</div>
+    <div class="login-sub">Scripts de Conhecimento — Faça login para continuar</div>
+    <div class="login-tabs">
+      <button class="login-tab active" id="lt-gestao" onclick="switchLoginTab('gestao')">Gestão</button>
+      <button class="login-tab" id="lt-colab" onclick="switchLoginTab('colaborador')">Colaborador</button>
+    </div>
+    <div class="login-field">
+      <label>Usuário</label>
+      <input type="text" id="l-user" placeholder="Digite seu usuário" onkeydown="if(event.key==='Enter')fazerLogin()"/>
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="l-pass" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')fazerLogin()"/>
+    </div>
+    <button class="login-btn" onclick="fazerLogin()">Entrar</button>
+    <div class="login-err" id="l-err">Usuário ou senha incorretos. Tente novamente.</div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--g100);font-size:11px;color:var(--g400);text-align:center;line-height:1.6;">
+      <strong>Colaborador:</strong> usuário <code>colaborador</code> / senha <code>tcu@2025</code>
+    </div>
+  </div>
+</div>
+
+<nav class="topnav" id="topnav" style="display:none;">
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div><div class="bname">Central de Suporte em TI</div><div class="bsub">Scripts de Conhecimento</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="nav-tabs" id="nav-tabs">
+      <button class="ntab active" id="tab-gestao" onclick="goPage('gestao',this)">Gestão</button>
+      <button class="ntab" id="tab-atualizar" onclick="goPage('atualizar',this)">Solicitar Atualização</button>
+    </div>
+    <div class="user-info">
+      <div class="user-avatar" id="u-avatar"></div>
+      <div>
+        <div style="font-size:13px;font-weight:500;" id="u-name"></div>
+        <span class="user-role" id="u-role"></span>
+      </div>
+      <button class="logout-btn" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+</nav>
+
+<div class="main" id="main-content" style="display:none;">
+
+<!-- ========== GESTÃO ========== -->
+<div class="page active" id="page-gestao">
+
+  <div id="readonly-banner" class="readonly-banner">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    Você está no modo <strong>somente leitura</strong>. Apenas gestores podem editar scripts e gerenciar solicitações.
+  </div>
+
+  <div class="stats">
+    <div class="scard"><div class="slbl">Canceladas</div><div class="snum" style="color:var(--red);" id="st-total">0</div></div>
+    <div class="scard"><div class="slbl">Pendentes</div><div class="snum na" id="st-pend">0</div></div>
+    <div class="scard"><div class="slbl">Concluídas</div><div class="snum ng" id="st-conc">0</div></div>
+    <div class="scard"><div class="slbl">Em andamento</div><div class="snum nb" id="st-and">0</div></div>
+  </div>
+
+  <!-- BARRA DE PESQUISA GLOBAL -->
+  <div class="toolbar" style="margin-bottom:16px;">
+    <div class="sw">
+      <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="q-global" placeholder="Pesquisar solicitações (nome, número, chamado, solicitante, gestor...)" oninput="filtrarGlobal()"/>
+    </div>
+    <select id="q-global-status" class="flt" onchange="filtrarGlobal()">
+      <option value="">Todos os status</option>
+      <option value="Pendente">⏳ Pendente</option>
+      <option value="Em andamento">🔄 Em andamento</option>
+      <option value="Concluída">✅ Concluída</option>
+      <option value="Cancelada">❌ Cancelada</option>
+    </select>
+    <button class="btn" style="font-size:12px;padding:7px 14px;background:var(--green-lt);color:var(--green);border-color:#97C459;" onclick="exportarXLS()">↓ Exportar XLS</button>
+  </div>
+  <!-- RESULTADOS DA PESQUISA GLOBAL -->
+  <div id="global-results" style="display:none;margin-bottom:16px;"></div>
+
+  <!-- PAINEL SOLICITAÇÕES PENDENTES -->
+  <div id="ppanel" class="ppanel" style="display:none;">
+    <div class="ppanel-head">
+      <div class="ppanel-title">
+        <span class="pulse"></span>
+        Solicitações de Atualização
+        <span id="pp-badge" style="background:var(--amber);color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;"></span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn" id="pp-toggle-btn" style="font-size:12px;padding:4px 12px;" onclick="togglePpanel()">Recolher ▲</button>
+      </div>
+    </div>
+    <div id="pp-body" class="tbl-scroll">
+    <table style="width:100%;">
+      <thead><tr>
+        <th style="width:100px;"></th>
+        <th>Data</th>
+        <th>Nome do Script</th>
+        <th>Gestor</th>
+        <th>Status / Ação</th>
+      </tr></thead>
+      <tbody id="sol-tb"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- PAINEL SOLICITAÇÕES CONCLUÍDAS -->
+  <div id="conc-panel" style="display:none;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+        Solicitações Concluídas / Canceladas
+        <span id="conc-badge" style="background:var(--green);color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;"></span>
+      </div>
+      <button class="btn" id="conc-toggle-btn" style="font-size:12px;padding:4px 12px;" onclick="toggleConcPanel()">Recolher ▲</button>
+    </div>
+    <div id="conc-body">
+      <div id="conc-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== NOVO / EDITAR ========== -->
+<div class="page" id="page-novo">
+  <div class="mwrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-size:15px;font-weight:600;" id="form-tit">Novo Script de Conhecimento</div>
+    </div>
+    <div class="mhdr">Central de Suporte em TI</div>
+    <table class="mtable">
+      <tr>
+        <td class="lbl">Identificação do procedimento</td>
+        <td><table class="itable"><tr>
+          <td style="width:35%"><div class="ilbl">Número</div><div class="ival"><input type="text" id="f-num" placeholder="Ex: 414242"/></div></td>
+          <td><div class="ilbl">Título</div><div class="ival"><input type="text" id="f-tit" placeholder="Título do procedimento"/></div></td>
+        </tr></table></td>
+      </tr>
+      <tr><td class="lbl">Assunto</td><td class="val"><input type="text" id="f-ass" placeholder="Assunto principal abordado no script"/></td></tr>
+      <tr><td class="lbl">Área responsável pela validação</td><td class="val"><input type="text" id="f-area" placeholder="Ex: Gerência de Infraestrutura de TI"/></td></tr>
+      <tr>
+        <td class="lbl">Resolução (como fazer?)</td>
+        <td class="resval"><div style="display:flex;">
+          <div class="fhint">Fonte: Verdana<br>Tamanho: 9</div>
+          <textarea id="f-res" rows="8" placeholder="Descreva o passo a passo..."></textarea>
+        </div></td>
+      </tr>
+    </table>
+    <div class="slbl">Controle de Alterações</div>
+    <table class="atable">
+      <thead><tr><th>Data da Alteração</th><th>Responsável</th><th>Cargo</th><th style="width:36px;"></th></tr></thead>
+      <tbody id="alt-tb"></tbody>
+    </table>
+    <button class="addrow" onclick="addAlt()">+ Adicionar linha</button>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--g100);display:flex;align-items:center;gap:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--g400);">STATUS</label>
+      <select id="f-status" style="padding:7px 10px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);">
+        <option value="Rascunho">Rascunho</option><option value="Ativo">Ativo</option>
+        <option value="Em revisão">Em revisão</option><option value="Arquivado">Arquivado</option>
+      </select>
+    </div>
+    <div class="faction">
+      <button class="btn" onclick="cancelarForm()">Cancelar</button>
+      <button class="btn dng" id="btn-del" style="display:none;" onclick="delDoForm()">Remover</button>
+      <button class="btn prim" onclick="salvarScript()">Salvar Script</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SOLICITAR ATUALIZAÇÃO ========== -->
+<div class="page" id="page-atualizar">
+  <div class="fwrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+      <div style="width:38px;height:38px;background:var(--amber-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </div>
+      <div>
+        <div class="fwrap-title">Solicitar Atualização de Script</div>
+        <div style="font-size:12px;color:var(--g400);">Encaminhado para <strong>basedeconhecimento@tcu.gov.br</strong> e registrado no dashboard.</div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--g100);margin:16px 0;"></div>
+    <div class="fgrow">
+      <div class="fg"><label>Nº do Script</label><input type="text" id="at-num" placeholder="Ex: 414242"/></div>
+      <div class="fg"><label>Chamado</label><input type="text" id="at-chamado" placeholder="Nº do chamado (opcional)"/></div>
+    </div>
+    <div class="fg"><label>Seu nome <span style="color:var(--red)">*</span></label><input type="text" id="at-sol" placeholder="Nome completo"/></div>
+    <div class="fg"><label>Nome do Script <span style="color:var(--red)">*</span></label><input type="text" id="at-nome" placeholder="Título do script que deseja atualizar"/></div>
+    <div class="fg">
+      <label>Categoria <span style="color:var(--red)">*</span></label>
+      <select id="at-cat" onchange="atualizarGestor()">
+        <option value="">Selecione a categoria...</option>
+        <option value="Hardware/Software">Hardware / Software</option>
+        <option value="Sistemas">Sistemas</option>
+      </select>
+    </div>
+    <div id="at-gestor-box" style="display:none;background:var(--blue-lt);border:1px solid #B8D4F0;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--blue-dk);margin-bottom:14px;display:none;align-items:center;gap:8px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Gestor responsável: <strong id="at-gestor-nome"></strong>
+    </div>
+    <div class="fg"><label>O que deseja atualizar ou corrigir <span style="color:var(--red)">*</span></label>
+      <select id="at-tipo">
+        <option value="">Selecione o tipo de atualização...</option>
+        <option>Correção de informação incorreta</option>
+        <option>Atualização de passo a passo</option>
+        <option>Inclusão de novo procedimento</option>
+        <option>Remoção de informação desatualizada</option>
+        <option>Atualização de imagem / screenshot</option>
+        <option>Correção de link ou referência</option>
+        <option>Outro</option>
+      </select>
+    </div>
+    <div class="fg"><label>Descrição detalhada <span style="color:var(--red)">*</span></label>
+      <textarea id="at-desc" rows="6" placeholder="Descreva detalhadamente o que precisa ser atualizado ou corrigido. Informe o trecho atual e como deveria ficar após a correção..."></textarea>
+    </div>
+    <div class="fg"><label>Seu e-mail para acompanhamento</label><input type="text" id="at-email" placeholder="seuemail@tcu.gov.br"/></div>
+    <div class="fg">
+      <label>Solicitar brevidade</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400;color:var(--g700);background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:8px 14px;transition:all .15s;" id="brev-nao-lbl">
+          <input type="radio" name="brevidade" id="brev-nao" value="Não" onchange="selecionarBrevidade(this)" style="accent-color:var(--blue);width:15px;height:15px;cursor:pointer;"/> Não
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400;color:var(--g700);background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:8px 14px;transition:all .15s;" id="brev-sim-lbl">
+          <input type="radio" name="brevidade" id="brev-sim" value="Sim" onchange="selecionarBrevidade(this)" style="accent-color:var(--blue);width:15px;height:15px;cursor:pointer;"/> Sim — preciso com urgência
+        </label>
+      </div>
+      <div id="brev-motivo-box" style="display:none;margin-top:10px;">
+        <input type="text" id="at-brevidade-motivo" placeholder="Descreva brevemente o motivo da urgência..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid #EF9F27;border-radius:6px;background:#FFFBF5;color:var(--g900);"/>
+      </div>
+    </div>
+    <div class="infobox">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Ao clicar em <strong>Enviar Solicitação</strong>, um e-mail será gerado para <strong>basedeconhecimento@tcu.gov.br</strong> e a solicitação ficará visível no dashboard para acompanhamento da equipe.
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn prim" onclick="enviarSolicitacao()">Enviar Solicitação</button>
+      <button class="btn" onclick="limparSolicitacao()">Limpar</button>
+    </div>
+    <div class="toast" id="at-toast">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Solicitação enviada! Verifique o cliente de e-mail e acompanhe o status no Dashboard.
+    </div>
+  </div>
+</div>
+
+<!-- ========== SUGESTÕES ========== -->
+<div class="page" id="page-sugestoes">
+  <div class="fwrap">
+    <div class="fwrap-title">Formulário de Sugestão de Melhorias</div>
+    <div class="fwrap-sub">Use este formulário para sugerir melhorias nos scripts existentes ou propor novos procedimentos. Todas as sugestões serão avaliadas pela equipe de gestão.</div>
+    <div class="fgrow">
+      <div class="fg"><label>Seu nome</label><input type="text" id="sg-nome" placeholder="Nome completo"/></div>
+      <div class="fg"><label>Área / Setor</label><input type="text" id="sg-area" placeholder="Ex: Suporte N1"/></div>
+    </div>
+    <div class="fg"><label>E-mail para retorno</label><input type="text" id="sg-email" placeholder="seuemail@tcu.gov.br"/></div>
+    <div class="fg"><label>Script relacionado</label><input type="text" id="sg-script" placeholder="Número ou título do script (se aplicável)"/></div>
+    <div class="fg"><label>Prioridade</label>
+      <div class="prio-row">
+        <button class="pb" onclick="setPrio('b',this)">Baixa</button>
+        <button class="pb" onclick="setPrio('m',this)">Média</button>
+        <button class="pb" onclick="setPrio('a',this)">Alta</button>
+      </div>
+    </div>
+    <div class="fg"><label>Descrição da melhoria <span style="color:var(--red)">*</span></label><textarea id="sg-desc" rows="5" placeholder="Descreva a melhoria sugerida..."></textarea></div>
+    <div class="fg"><label>Justificativa / impacto esperado</label><textarea id="sg-just" rows="3" placeholder="Qual o benefício esperado?"></textarea></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn prim" onclick="enviarSugestao()">Enviar Sugestão</button>
+      <button class="btn" onclick="limparSugestao()">Limpar</button>
+    </div>
+    <div class="toast" id="sg-toast">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Sugestão registrada! A equipe irá analisar em breve.
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL EXCLUIR PEDIDO -->
+<div class="overlay" id="del-sol-ov">
+  <div class="modal" style="max-width:400px;">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;background:var(--red-lt);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </div>
+        <span class="mtitle">Excluir pedido</span>
+      </div>
+      <button class="mx" onclick="fecharDelSol()">×</button>
+    </div>
+    <p class="mbody">Tem certeza que deseja excluir o pedido:</p>
+    <div id="del-sol-info" style="background:var(--g50);border-radius:8px;padding:10px 12px;margin:10px 0;font-size:13px;font-weight:500;color:var(--g900);"></div>
+    <p class="mbody" style="color:var(--red);font-size:12px;">Esta ação é permanente e não pode ser desfeita.</p>
+    <div class="mfoot">
+      <button class="btn" onclick="fecharDelSol()">Cancelar</button>
+      <button class="btn dng" onclick="confirmarDelSol()">Sim, excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="overlay" id="del-ov">
+  <div class="modal">
+    <div class="mhead"><span class="mtitle">Confirmar exclusão</span><button class="mx" onclick="fecharDel()">×</button></div>
+    <p class="mbody">Tem certeza que deseja remover este script? Esta ação não pode ser desfeita.</p>
+    <div class="mfoot">
+      <button class="btn" onclick="fecharDel()">Cancelar</button>
+      <button class="btn dng" onclick="confirmarDel()">Sim, remover</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTROS -->
+<div class="overlay" id="reg-ov">
+  <div class="modal" style="max-width:540px;">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;background:var(--blue-lt);border-radius:6px;display:flex;align-items:center;justify-content:center;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="mtitle">Registros da Solicitação</div>
+          <div id="reg-sol-nome" style="font-size:12px;color:var(--g400);margin-top:1px;"></div>
+        </div>
+      </div>
+      <button class="mx" onclick="fecharReg()">×</button>
+    </div>
+
+    <!-- Lista de registros existentes -->
+    <div id="reg-lista" style="max-height:240px;overflow-y:auto;margin-bottom:14px;"></div>
+
+    <!-- Formulário novo registro -->
+    <div style="background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:14px;">
+      <div style="font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">+ Novo Registro</div>
+      <div class="fgrow" style="margin-bottom:10px;">
+        <div><label style="display:block;font-size:12px;font-weight:600;color:var(--g400);margin-bottom:4px;">Data <span style="color:var(--red)">*</span></label>
+          <input type="date" id="reg-data" style="width:100%;padding:7px 10px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);"/>
+        </div>
+        <div><label style="display:block;font-size:12px;font-weight:600;color:var(--g400);margin-bottom:4px;">Registrado por</label>
+          <input type="text" id="reg-autor" placeholder="Seu nome" style="width:100%;padding:7px 10px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);"/>
+        </div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);margin-bottom:4px;">Observação <span style="color:var(--red)">*</span></label>
+        <textarea id="reg-obs" rows="3" placeholder="Descreva o andamento, ação tomada ou observação relevante..." style="width:100%;padding:7px 10px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);resize:none;line-height:1.5;"></textarea>
+      </div>
+      <button class="btn prim" onclick="salvarRegistro()" style="font-size:13px;">Salvar Registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOTIVO CANCELAMENTO -->
+<div class="overlay" id="canc-ov">
+  <div class="modal" style="max-width:460px;">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;background:var(--red-lt);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <span class="mtitle">Cancelar Solicitação</span>
+      </div>
+      <button class="mx" onclick="fecharCanc()">×</button>
+    </div>
+    <div style="background:var(--red-lt);border:1px solid #f09595;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      Informe o motivo do cancelamento. Ele ficará registrado na solicitação para rastreabilidade.
+    </div>
+    <div style="margin-bottom:6px;">
+      <div style="font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;">Solicitação</div>
+      <div id="canc-info" style="font-size:13px;color:var(--g700);background:var(--g50);border-radius:6px;padding:8px 12px;"></div>
+    </div>
+    <div style="margin:14px 0;">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;">Motivo do cancelamento <span style="color:var(--red)">*</span></label>
+      <textarea id="canc-motivo" rows="4" placeholder="Descreva o motivo pelo qual esta solicitação está sendo cancelada..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);resize:none;line-height:1.5;"></textarea>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="fecharCanc()">Voltar</button>
+      <button class="btn dng" onclick="confirmarCanc()">Confirmar Cancelamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTIFICAÇÃO DE CONCLUSÃO -->
+<div class="overlay" id="notif-ov">
+  <div class="modal" style="max-width:520px;">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;background:var(--green-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <span class="mtitle">Script atualizado — Notificar equipe</span>
+      </div>
+      <button class="mx" onclick="fecharNotif()">×</button>
+    </div>
+
+    <div style="background:var(--green-lt);border:1px solid #97C459;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--green);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Solicitação marcada como <strong>Concluída</strong>. Envie um e-mail para comunicar a equipe sobre a atualização do script.
+    </div>
+
+    <!-- Resumo do script -->
+    <div style="background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;">
+      <div style="font-size:11px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Script atualizado</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div><span style="color:var(--g400);font-size:12px;">Nº: </span><span id="notif-num" style="font-weight:600;"></span></div>
+        <div><span style="color:var(--g400);font-size:12px;">Tipo: </span><span id="notif-tipo" style="font-size:12px;color:var(--g700);"></span></div>
+        <div style="grid-column:1/-1;"><span style="color:var(--g400);font-size:12px;">Nome: </span><span id="notif-nome" style="font-weight:500;"></span></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Destinatários do e-mail <span style="color:var(--red)">*</span></label>
+      <input type="text" id="notif-dest" placeholder="email1@tcu.gov.br; email2@tcu.gov.br; ..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);"/>
+      <div style="font-size:11px;color:var(--g400);margin-top:4px;">Separe múltiplos e-mails com ponto e vírgula ( ; )</div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Mensagem adicional (opcional)</label>
+      <textarea id="notif-msg" rows="3" placeholder="Adicione informações complementares sobre a atualização realizada..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);resize:none;line-height:1.5;"></textarea>
+    </div>
+
+    <div style="background:var(--blue-lt);border:1px solid #B8D4F0;border-radius:6px;padding:9px 12px;font-size:12px;color:var(--blue-dk);margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      O e-mail será aberto no seu cliente de e-mail (Outlook, Gmail, etc.) já preenchido. Basta revisar e enviar.
+    </div>
+
+    <div class="mfoot">
+      <button class="btn" onclick="fecharNotif()">Pular — não enviar</button>
+      <button class="btn prim" onclick="enviarNotificacao()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Abrir e-mail para enviar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ============================================================
+// ESTADO
+// ============================================================
+var scripts=[], sols=[];
+var editId=null, delId=null, viewId=null, prio='', alts=[];
+
+// ============================================================
+// FIREBASE / FIRESTORE
+// ============================================================
+var firebaseConfig = {
+  apiKey: "AIzaSyCgsI2RVR-_5OFqFEPJk5XGsN0IPh7_8tM",
+  authDomain: "portal-scripts-ti.firebaseapp.com",
+  projectId: "portal-scripts-ti",
+  storageBucket: "portal-scripts-ti.firebasestorage.app",
+  messagingSenderId: "624338665584",
+  appId: "1:624338665584:web:b607e85bf84c02454074b5",
+  measurementId: "G-5JCBKLY4JS"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var COL_SOLS = 'solicitacoes';
+var COL_SCRIPTS = 'scripts';
+
+// ============================================================
+// UTILS
+// ============================================================
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtD(iso){
+  if(!iso)return'—';
+  try{
+    // Already has time component — parse directly
+    if(iso.indexOf('T')>=0||iso.indexOf(' ')>=0){
+      var d=new Date(iso);
+      return isNaN(d.getTime())?iso:d.toLocaleDateString('pt-BR');
+    }
+    // Date-only string (YYYY-MM-DD) — append noon to avoid timezone shift
+    return new Date(iso+'T12:00:00').toLocaleDateString('pt-BR');
+  }catch(e){return iso;}
+}
+function tagHtml(s){var m={Ativo:'at',Rascunho:'rs','Em revisão':'rv',Arquivado:'ar'};return'<span class="tag '+(m[s]||'rs')+'">'+esc(s)+'</span>';}
+function solTag(s){var m={Pendente:'pend',Concluída:'conc',Cancelada:'canc'};return'<span class="tag '+(m[s]||'pend')+'">'+esc(s)+'</span>';}
+
+// ============================================================
+// PERSISTÊNCIA — FIRESTORE
+// ============================================================
+function saveScripts(){
+  scripts.forEach(function(s){
+    db.collection(COL_SCRIPTS).doc(s.id).set(s).catch(function(e){console.error(e);});
+  });
+}
+
+function saveSols(){
+  if(!sols.length) return;
+  var s=sols[sols.length-1];
+  db.collection(COL_SOLS).doc(s.id).set(s).catch(function(e){console.error(e);});
+}
+
+function saveSolItem(s){
+  db.collection(COL_SOLS).doc(s.id).set(s).catch(function(e){console.error(e);});
+}
+
+function deleteSolFromDB(id){
+  db.collection(COL_SOLS).doc(id).delete().catch(function(e){console.error(e);});
+}
+
+function loadAll(){
+  // Carrega scripts
+  db.collection(COL_SCRIPTS).get().then(function(snap){
+    scripts=[];
+    snap.forEach(function(doc){scripts.push(doc.data());});
+    if(!scripts.length) seedScript();
+    else { renderTable(); updateStats(); }
+  }).catch(function(){ seedScript(); });
+  // Carrega solicitações
+  db.collection(COL_SOLS).get().then(function(snap){
+    sols=[];
+    snap.forEach(function(doc){sols.push(doc.data());});
+    updateStats();
+  }).catch(function(e){console.error(e);});
+}
+
+function seedScript(){
+  scripts=[{
+    id:uid(),numero:'414242',
+    titulo:'Como alterar ou efetuar o reset de senha da rede TCU \u2013 Estagi\u00e1rio',
+    assunto:'Este procedimento descreve como alterar ou efetuar o reset de senha da rede TCU \u2013 Estagi\u00e1rio.',
+    area:'SESUC',status:'Ativo',
+    resolucao:'Este procedimento descreve como alterar ou efetuar o reset de senha da rede TCU - Estagi\u00e1rio\nEste procedimento deve ser realizado dentro do desktop virtual - recomenda-se utilizar navegador Google Chrome\n\n1\u00ba Passo - Acessar o portal www.tcu.gov.br > Login > Alterar senha\n2\u00ba Passo - Clicar em "Alterar Senha"\n3\u00ba Passo - Clicar em "Esqueci minha senha"\n4\u00ba Passo - Informar login (XCPF ou e-mail), marcar captcha e clicar em ENVIAR\n5\u00ba Passo - Aparece mensagem de \u00eaxito\n6\u00ba Passo - Verificar e-mail particular cadastrado no portal TCU\n7\u00ba Passo - Se n\u00e3o recebeu: verificar SPAM e LIXEIRA\n8\u00ba Passo - Se continua sem receber: encaminhar para equipe N3\n9\u00ba Passo - Clicar no link para efetuar a troca\n10\u00ba Passo - Inserir nova senha e clicar em TROCAR\n11\u00ba Passo - Confirma\u00e7\u00e3o apresentada.',
+    alteracoes:[
+      {data:'2021-06-16',resp:'Jos\u00e9 Luiz Oyapock Silva Andrade',cargo:'Gestor da Informa\u00e7\u00e3o'},
+      {data:'2021-06-23',resp:'Jos\u00e9 Luiz Oyapock Silva Andrade',cargo:'Gestor da Informa\u00e7\u00e3o'},
+      {data:'2021-07-23',resp:'Jos\u00e9 Luiz Oyapock Silva Andrade',cargo:'Gestor da Informa\u00e7\u00e3o'}
+    ],
+    updatedAt:'2021-07-23T12:00:00.000Z'
+  }];
+  saveScripts(); renderTable(); updateStats();
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats(){
+  var canc=sols.filter(function(s){return s.status==='Cancelada';}).length;
+  var pend=sols.filter(function(s){return s.status==='Pendente';}).length;
+  var and=sols.filter(function(s){return s.status==='Em andamento';}).length;
+  var conc=sols.filter(function(s){return s.status==='Concluída';}).length;
+  document.getElementById('st-total').textContent=canc;
+  document.getElementById('st-pend').textContent=pend;
+  document.getElementById('st-and').textContent=and;
+  document.getElementById('st-conc').textContent=conc;
+  var ativas=sols.filter(function(s){return s.status==='Pendente'||s.status==='Em andamento';});
+  var pp=document.getElementById('ppanel');
+  if(ativas.length>0){
+    pp.style.display='block';
+    document.getElementById('pp-badge').textContent=ativas.length;
+    renderSols();
+  } else {
+    pp.style.display='none';
+  }
+  renderConcluidasPanel();
+}
+
+// ============================================================
+// PESQUISA GLOBAL
+// ============================================================
+function filtrarGlobal(){
+  var q=(document.getElementById('q-global').value||'').toLowerCase().trim();
+  var st=document.getElementById('q-global-status').value;
+  var res=document.getElementById('global-results');
+  if(!q&&!st){res.style.display='none';return;}
+  var found=sols.filter(function(s){
+    var matchSt=!st||s.status===st;
+    var matchQ=!q||(s.nome||'').toLowerCase().indexOf(q)>=0
+      ||(s.numero||'').toLowerCase().indexOf(q)>=0
+      ||(s.chamado||'').toLowerCase().indexOf(q)>=0
+      ||(s.solicitante||'').toLowerCase().indexOf(q)>=0
+      ||(s.gestor||'').toLowerCase().indexOf(q)>=0
+      ||(s.tipo||'').toLowerCase().indexOf(q)>=0
+      ||(s.desc||'').toLowerCase().indexOf(q)>=0
+      ||(s.cat||'').toLowerCase().indexOf(q)>=0;
+    return matchSt&&matchQ;
+  });
+  if(!found.length){
+    res.style.display='block';
+    res.innerHTML='<div style="background:var(--white);border:1px solid var(--g100);border-radius:10px;padding:20px;text-align:center;color:var(--g400);font-size:13px;">Nenhuma solicitação encontrada para esta pesquisa.</div>';
+    return;
+  }
+  res.style.display='block';
+  res.innerHTML='<div style="font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">'+found.length+' resultado'+(found.length>1?'s':'')+(q?' para "'+esc(q)+'"':'')+'</div>'
+    +found.map(function(s){
+      var isCanceled=s.status==='Cancelada';
+      var isConc=s.status==='Concluída';
+      var tagCls=solClass(s.status);
+      var icon=isCanceled?'❌':isConc?'✅':s.status==='Em andamento'?'🔄':'⏳';
+      return'<div style="background:var(--white);border:1px solid var(--g100);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:center;">'
+        +'<div>'
+          +'<div style="font-size:11px;font-weight:600;color:var(--g400);margin-bottom:2px;">NOME DO SCRIPT</div>'
+          +'<div style="font-size:13px;font-weight:500;">'+esc(s.nome)+'</div>'
+        +'</div>'
+        +'<div>'
+          +'<div style="font-size:11px;font-weight:600;color:var(--g400);margin-bottom:2px;">GESTOR / CATEGORIA</div>'
+          +'<div style="font-size:13px;">'+esc(s.gestor||'—')+' · <span style="font-size:11px;background:var(--blue-lt);color:var(--blue-dk);padding:1px 7px;border-radius:20px;font-weight:600;">'+esc(s.cat||'—')+'</span></div>'
+        +'</div>'
+        +'<div>'
+          +'<div style="font-size:11px;font-weight:600;color:var(--g400);margin-bottom:2px;">SOLICITANTE · DATA</div>'
+          +'<div style="font-size:13px;">'+esc(s.solicitante||'—')+' · '+esc(s.data||'—')+'</div>'
+        +'</div>'
+        +'<div><span class="tag '+tagCls+'">'+icon+' '+esc(s.status)+'</span></div>'
+      +'</div>';
+    }).join('');
+}
+
+
+var concCollapsed=false;
+function toggleConcPanel(){
+  concCollapsed=!concCollapsed;
+  var body=document.getElementById('conc-body');
+  var btn=document.getElementById('conc-toggle-btn');
+  body.style.display=concCollapsed?'none':'';
+  btn.textContent=concCollapsed?'Expandir ▼':'Recolher ▲';
+}
+
+function toggleConcItem(id){
+  var body=document.getElementById('conc-body-'+id);
+  var btn=document.getElementById('conc-btn-'+id);
+  if(!body)return;
+  var collapsed=body.style.display==='none';
+  body.style.display=collapsed?'block':'none';
+  btn.textContent=collapsed?'▲ Recolher':'▼ Expandir';
+}
+
+function renderConcluidasPanel(){
+  var concluidas=sols.filter(function(s){return s.status==='Concluída'||s.status==='Cancelada';});
+  var panel=document.getElementById('conc-panel');
+  if(!concluidas.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  document.getElementById('conc-badge').textContent=concluidas.length;
+  var list=document.getElementById('conc-list');
+  list.innerHTML=[].concat(concluidas).reverse().map(function(s){
+    var isCanceled=s.status==='Cancelada';
+    var borderColor=isCanceled?'#f09595':'#97C459';
+    var headBg=isCanceled?'var(--red-lt)':'var(--green-lt)';
+    var headColor=isCanceled?'var(--red)':'var(--green)';
+    var statusIcon=isCanceled?'❌':'✅';
+    var emailBadge=s.emailEnviado
+      ?'<span class="email-badge email-sent">✉ E-mail enviado em '+esc(s.emailEnviadoEm||'')+'</span>'
+      :'<span class="email-badge email-not">✉ E-mail não enviado</span>';
+    // Cancelamento — motivo
+    var motivoCanc='';
+    if(isCanceled&&s.registros){
+      var rCanc=s.registros.filter(function(r){return r.obs&&r.obs.indexOf('CANCELAMENTO:')>=0;});
+      if(rCanc.length){motivoCanc='<div style="margin-top:10px;background:var(--red-lt);border:1px solid #f09595;border-radius:8px;padding:10px 12px;"><div class="conc-flbl" style="color:var(--red);">Motivo do cancelamento</div><div style="font-size:13px;color:var(--red);margin-top:2px;">'+esc(rCanc[0].obs.replace('❌ CANCELAMENTO: ',''))+'</div></div>';}
+    }
+    // Registros
+    var nreg=(s.registros&&s.registros.length)||0;
+    var regsHtml='';
+    if(nreg>0){
+      regsHtml='<div style="margin-top:10px;">'
+        +'<div class="conc-flbl" style="margin-bottom:6px;">Histórico de registros</div>'
+        +s.registros.map(function(r){
+          return'<div style="border-left:3px solid '+(isCanceled?'#f09595':'#97C459')+';padding:6px 10px;background:var(--g50);border-radius:0 6px 6px 0;margin-bottom:6px;">'
+            +'<div style="font-size:11px;font-weight:600;color:var(--g400);">'+esc(fmtD(r.data))+(r.autor?' · '+esc(r.autor):'')+'</div>'
+            +'<div style="font-size:12px;color:var(--g700);margin-top:2px;">'+esc(r.obs)+'</div>'
+          +'</div>';
+        }).join('')
+      +'</div>';
+    }
+    return'<div class="conc-card" style="border-color:'+borderColor+';">'
+      // CABEÇALHO com expand/collapse
+      +'<div class="conc-card-head" style="background:'+headBg+';border-color:'+borderColor+';cursor:pointer;" onclick="toggleConcItem(\''+s.id+'\')">'
+        +'<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">'
+          +'<span style="font-size:14px;">'+statusIcon+'</span>'
+          +'<div>'
+            +'<div class="conc-card-title" style="color:'+headColor+';">'+esc(s.nome)+'</div>'
+            +'<div style="font-size:11px;color:'+(isCanceled?'#A32D2D':'var(--green)')+';margin-top:2px;opacity:.8;">'
+              +(isCanceled?'Cancelado':'Concluído')+' em '+esc(s.concluidoEm||'—')
+            +'</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">'
+          +emailBadge
+          +'<button id="conc-btn-'+s.id+'" class="btn" style="font-size:11px;padding:3px 10px;background:transparent;border-color:'+(isCanceled?'#f09595':'#97C459')+';color:'+headColor+';" onclick="event.stopPropagation();toggleConcItem(\''+s.id+'\')">▼ Expandir</button>'
+          +'<button class="ib del" title="Excluir" onclick="event.stopPropagation();abrirDelSol(\''+s.id+'\')" style="width:26px;height:26px;flex-shrink:0;"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
+        +'</div>'
+      +'</div>'
+      // CORPO — recolhido por padrão
+      +'<div id="conc-body-'+s.id+'" style="display:none;">'
+        +'<div class="conc-card-body">'
+          +'<div class="conc-grid">'
+            +'<div class="conc-field"><div class="conc-flbl">Nº Script</div><div class="conc-fval" style="font-family:monospace;">'+esc(s.numero||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Chamado</div><div class="conc-fval" style="font-family:monospace;">'+esc(s.chamado||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Categoria</div><div class="conc-fval"><span style="background:var(--blue-lt);color:var(--blue-dk);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">'+esc(s.cat||'—')+'</span></div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Gestor</div><div class="conc-fval" style="font-weight:500;color:var(--blue-dk);">'+esc(s.gestor||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Tipo de atualização</div><div class="conc-fval">'+esc(s.tipo||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Solicitante</div><div class="conc-fval">'+esc(s.solicitante||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Data da solicitação</div><div class="conc-fval">'+esc(s.data||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">E-mail destinatários</div><div class="conc-fval" style="font-size:12px;">'+esc(s.emailDestinatarios||'—')+'</div></div>'
+            +'<div class="conc-field" style="grid-column:1/-1;"><div class="conc-flbl">Descrição</div><div class="conc-fval" style="white-space:pre-wrap;line-height:1.6;">'+esc(s.desc||'—')+'</div></div>'
+          +'</div>'
+          +motivoCanc
+          +regsHtml
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+// ============================================================
+// TOGGLE PAINEL SOLICITAÇÕES ATIVAS
+// ============================================================
+var ppCollapsed=false;
+function togglePpanel(){
+  ppCollapsed=!ppCollapsed;
+  var body=document.getElementById('pp-body');
+  var btn=document.getElementById('pp-toggle-btn');
+  body.style.display=ppCollapsed?'none':'';
+  btn.textContent=ppCollapsed?'Expandir ▼':'Recolher ▲';
+}
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+function goPage(name, tab){
+  var pages=document.querySelectorAll('.page');
+  for(var i=0;i<pages.length;i++) pages[i].classList.remove('active');
+  var tabs=document.querySelectorAll('.ntab');
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('active');
+  document.getElementById('page-'+name).classList.add('active');
+  if(tab) tab.classList.add('active');
+  if(name==='novo' && !editId) resetForm();
+}
+
+// ============================================================
+// TABELA DE SCRIPTS
+// ============================================================
+function renderTable(){
+  var q=(document.getElementById('q-busca').value||'').toLowerCase();
+  var rows=scripts.filter(function(s){
+    return !q||s.titulo.toLowerCase().indexOf(q)>=0||s.numero.toLowerCase().indexOf(q)>=0||(s.assunto||'').toLowerCase().indexOf(q)>=0;
+  });
+  var tb=document.getElementById('sc-tb');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">Nenhum script encontrado.</div></td></tr>';return;}
+  tb.innerHTML=rows.map(function(s){
+    return '<tr>'
+      +'<td class="tc-n">'+esc(s.numero)+'</td>'
+      +'<td><span class="tc-t" onclick="verScript(\''+s.id+'\')">'+esc(s.titulo)+'</span></td>'
+      +'<td class="tc-s">'+esc(s.assunto||'—')+'</td>'
+      +'<td class="tc-s">'+esc(s.area||'—')+'</td>'
+      +'<td>'+tagHtml(s.status)+'</td>'
+      +'<td class="tc-s">'+fmtD(s.updatedAt)+'</td>'
+      +'<td><div class="ract">'
+        +'<button class="ib" title="Ver" onclick="verScript(\''+s.id+'\')"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>'
+        +'<button class="ib" title="Editar" onclick="editarScript(\''+s.id+'\')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+        +'<button class="ib" title="PDF" onclick="gerarPDF(\''+s.id+'\')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg></button>'
+        +'<button class="ib del" title="Remover" onclick="abrirDel(\''+s.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
+      +'</div></td>'
+    +'</tr>';
+  }).join('');
+}
+
+// ============================================================
+// VER SCRIPT (PAINEL DETALHE)
+// ============================================================
+function verScript(id){
+  viewId=id;
+  var s=scripts.filter(function(x){return x.id===id;})[0];
+  if(!s)return;
+  document.getElementById('dp-titulo').textContent=s.titulo;
+  document.getElementById('dv-num').textContent=s.numero;
+  document.getElementById('dv-tit').textContent=s.titulo;
+  document.getElementById('dv-ass').textContent=s.assunto||'—';
+  document.getElementById('dv-area').textContent=s.area||'—';
+  document.getElementById('dv-res').textContent=s.resolucao||'—';
+  var ab=document.getElementById('dv-altb');
+  if(!s.alteracoes||!s.alteracoes.length){
+    ab.innerHTML='<tr><td colspan="3" style="padding:8px 10px;color:#aaa;font-style:italic;font-size:12px;">Nenhuma alteração registrada</td></tr>';
+  } else {
+    ab.innerHTML=s.alteracoes.map(function(a){
+      return'<tr>'
+        +'<td style="padding:6px 10px;font-family:Verdana,sans-serif;font-size:13px;">'+esc(fmtD(a.data))+'</td>'
+        +'<td style="padding:6px 10px;font-family:Verdana,sans-serif;font-size:13px;">'+esc(a.resp||'—')+'</td>'
+        +'<td style="padding:6px 10px;font-family:Verdana,sans-serif;font-size:13px;">'+esc(a.cargo||'—')+'</td>'
+      +'</tr>';
+    }).join('');
+  }
+  var p=document.getElementById('dpanel');
+  p.classList.add('show');
+  p.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function fecharDetalhe(){document.getElementById('dpanel').classList.remove('show');viewId=null;}
+function editarDetalhe(){if(viewId)editarScript(viewId);}
+function pdfDetalhe(){if(viewId)gerarPDF(viewId);}
+
+// ============================================================
+// FORMULÁRIO NOVO / EDITAR
+// ============================================================
+function resetForm(){
+  editId=null;
+  alts=[{data:'',resp:'',cargo:''}];
+  document.getElementById('form-tit').textContent='Novo Script de Conhecimento';
+  document.getElementById('btn-del').style.display='none';
+  document.getElementById('f-num').value='';
+  document.getElementById('f-tit').value='';
+  document.getElementById('f-ass').value='';
+  document.getElementById('f-area').value='';
+  document.getElementById('f-res').value='';
+  document.getElementById('f-status').value='Rascunho';
+  renderAlts();
+}
+function novoScript(){resetForm();goPage('novo',null);}
+
+function editarScript(id){
+  var s=scripts.filter(function(x){return x.id===id;})[0];
+  if(!s)return;
+  editId=id;
+  document.getElementById('form-tit').textContent='Editar Script de Conhecimento';
+  document.getElementById('btn-del').style.display='inline-flex';
+  document.getElementById('f-num').value=s.numero;
+  document.getElementById('f-tit').value=s.titulo;
+  document.getElementById('f-ass').value=s.assunto||'';
+  document.getElementById('f-area').value=s.area||'';
+  document.getElementById('f-res').value=s.resolucao||'';
+  document.getElementById('f-status').value=s.status;
+  alts=s.alteracoes&&s.alteracoes.length?JSON.parse(JSON.stringify(s.alteracoes)):[{data:'',resp:'',cargo:''}];
+  renderAlts();
+  goPage('novo',null);
+}
+
+function renderAlts(){
+  document.getElementById('alt-tb').innerHTML=alts.map(function(a,i){
+    return'<tr>'
+      +'<td><input type="date" value="'+(a.data||'')+'" oninput="alts['+i+'].data=this.value"/></td>'
+      +'<td><input type="text" value="'+esc(a.resp||'')+'" placeholder="Nome do responsável" oninput="alts['+i+'].resp=this.value"/></td>'
+      +'<td><input type="text" value="'+esc(a.cargo||'')+'" placeholder="Cargo/Função" oninput="alts['+i+'].cargo=this.value"/></td>'
+      +'<td class="tdel"><button onclick="remAlt('+i+')" title="Remover">×</button></td>'
+    +'</tr>';
+  }).join('');
+}
+function addAlt(){alts.push({data:'',resp:'',cargo:''});renderAlts();}
+function remAlt(i){if(alts.length>1){alts.splice(i,1);renderAlts();}}
+
+function salvarScript(){
+  var num=document.getElementById('f-num').value.trim();
+  var tit=document.getElementById('f-tit').value.trim();
+  var ass=document.getElementById('f-ass').value.trim();
+  var res=document.getElementById('f-res').value.trim();
+  if(!num||!tit||!ass||!res){alert('Preencha os campos obrigatórios:\n• Número\n• Título\n• Assunto\n• Resolução');return;}
+  var obj={
+    numero:num,titulo:tit,assunto:ass,
+    area:document.getElementById('f-area').value.trim(),
+    status:document.getElementById('f-status').value,
+    resolucao:res,
+    alteracoes:alts.filter(function(a){return a.data||a.resp||a.cargo;}),
+    updatedAt:new Date().toISOString()
+  };
+  if(editId){
+    var idx=-1;
+    for(var i=0;i<scripts.length;i++){if(scripts[i].id===editId){idx=i;break;}}
+    if(idx>=0) scripts[idx]=Object.assign({},scripts[idx],obj);
+  } else {
+    scripts.unshift(Object.assign({id:uid()},obj));
+  }
+  editId=null;
+  saveScripts(); renderTable(); updateStats();
+  goPage('gestao',document.querySelectorAll('.ntab')[0]);
+}
+function cancelarForm(){editId=null;goPage('gestao',document.querySelectorAll('.ntab')[0]);}
+function delDoForm(){if(editId)abrirDel(editId);editId=null;}
+
+// ============================================================
+// DELETAR
+// ============================================================
+function abrirDel(id){delId=id;document.getElementById('del-ov').classList.add('show');}
+function fecharDel(){document.getElementById('del-ov').classList.remove('show');delId=null;}
+function confirmarDel(){
+  if(!delId)return;
+  scripts=scripts.filter(function(s){return s.id!==delId;});
+  if(viewId===delId)fecharDetalhe();
+  saveScripts(); renderTable(); updateStats(); fecharDel();
+  goPage('gestao',document.querySelectorAll('.ntab')[0]);
+}
+
+// ============================================================
+// SOLICITAR ATUALIZAÇÃO
+// ============================================================
+function solClass(s){return{Pendente:'pend','Em andamento':'and',Concluída:'conc',Cancelada:'canc'}[s]||'pend';}
+function getGestor(cat){return cat==='Sistemas'?'José Luiz':'Marcus Marra';}
+
+function toggleSolRow(id){
+  var det=document.getElementById('sol-det-'+id);
+  var btn=document.getElementById('sol-btn-'+id);
+  if(!det)return;
+  var collapsed=det.style.display==='none';
+  det.style.display=collapsed?'':'none';
+  btn.textContent=collapsed?'▲ Recolher':'▼ Expandir';
+}
+
+function renderSols(){
+  var tb=document.getElementById('sol-tb');
+  var lista=[].concat(sols.filter(function(s){return s.status==='Pendente'||s.status==='Em andamento';})).reverse();
+  if(!lista.length){tb.innerHTML='<tr><td colspan="5"><div class="empty">Nenhuma solicitação encontrada para este filtro.</div></td></tr>';return;}
+  tb.innerHTML=lista.map(function(s){
+    var cls=solClass(s.status);
+    var nreg=(s.registros&&s.registros.length)||0;
+    var gestor=s.gestor||'—';
+    // Linha principal resumida
+    var mainRow='<tr style="background:var(--white);">'
+      +'<td style="padding:10px 13px;white-space:nowrap;display:flex;gap:6px;">'
+        +'<button id="sol-btn-'+s.id+'" class="btn" style="font-size:11px;padding:3px 10px;" onclick="toggleSolRow(\''+s.id+'\')">▼ Expandir</button>'
+        +'<button class="ib del" title="Excluir pedido" onclick="abrirDelSol(\''+s.id+'\')" style="width:28px;height:28px;flex-shrink:0;"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
+      +'</td>'
+      +'<td class="tc-s">'+esc(s.data)+'</td>'
+      +'<td style="font-weight:500;font-size:13px;">'+esc(s.nome)+(s.brevidade==='Sim'?'&nbsp;<span style="background:#FAEEDA;color:var(--amber);font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;border:1px solid #EF9F27;vertical-align:middle;">🚨 URGENTE</span>':'')+'</td>'
+      +'<td class="tc-s" style="font-weight:500;color:var(--blue-dk);">'+esc(gestor)+'</td>'
+      +'<td>'
+        +'<select class="sol-sel '+cls+'" onchange="mudarSol(\''+s.id+'\',this.value,this)">'
+          +'<option value="Pendente"'+(s.status==='Pendente'?' selected':'')+'>⏳ Pendente</option>'
+          +'<option value="Em andamento"'+(s.status==='Em andamento'?' selected':'')+'>🔄 Em andamento</option>'
+          +'<option value="Concluída"'+(s.status==='Concluída'?' selected':'')+'>✅ Concluída</option>'
+          +'<option value="Cancelada"'+(s.status==='Cancelada'?' selected':'')+'>❌ Cancelada</option>'
+        +'</select>'
+      +'</td>'
+    +'</tr>';
+    // Linha de detalhes (recolhida por padrão)
+    var detRow='<tr id="sol-det-'+s.id+'" style="display:none;background:var(--g50);">'
+      +'<td colspan="5" style="padding:0;">'
+        +'<div style="padding:16px 20px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;">'
+          +'<div style="background:var(--white);border:1px solid var(--g100);border-radius:8px;padding:10px 12px;">'
+            +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Nº Script</div>'
+            +'<div style="font-size:13px;font-family:monospace;">'+esc(s.numero||'—')+'</div>'
+          +'</div>'
+          +'<div style="background:var(--white);border:1px solid var(--g100);border-radius:8px;padding:10px 12px;">'
+            +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Chamado</div>'
+            +'<div style="font-size:13px;font-family:monospace;">'+esc(s.chamado||'—')+'</div>'
+          +'</div>'
+          +'<div style="background:var(--white);border:1px solid var(--g100);border-radius:8px;padding:10px 12px;">'
+            +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Categoria</div>'
+            +'<div><span style="background:var(--blue-lt);color:var(--blue-dk);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">'+esc(s.cat||'—')+'</span></div>'
+          +'</div>'
+          +'<div style="background:var(--white);border:1px solid var(--g100);border-radius:8px;padding:10px 12px;">'
+            +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Solicitante</div>'
+            +'<div style="font-size:13px;">'+esc(s.solicitante||'—')+'</div>'
+          +'</div>'
+          +'<div style="background:var(--white);border:1px solid '+(s.brevidade==='Sim'?'#EF9F27':'var(--g100)')+';border-radius:8px;padding:10px 12px;">'
+            +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Brevidade</div>'
+            +'<div style="font-size:13px;">'+(s.brevidade==='Sim'?'<span style="color:var(--amber);font-weight:600;">🚨 Sim — urgente</span>'+(s.brevMotivo?' <span style="color:var(--g400);font-size:12px;">· '+esc(s.brevMotivo)+'</span>':''):'<span style="color:var(--g400);">Não</span>')+'</div>'
+          +'</div>'
+          +'<div style="background:var(--white);border:1px solid var(--g100);border-radius:8px;padding:10px 12px;grid-column:1/-1;">'
+            +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Tipo de Atualização</div>'
+            +'<div style="font-size:13px;">'+esc(s.tipo||'—')+'</div>'
+          +'</div>'
+          +'<div style="background:var(--white);border:1px solid var(--g100);border-radius:8px;padding:10px 12px;grid-column:1/-1;">'
+            +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Descrição</div>'
+            +'<div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">'+esc(s.desc||'—')+'</div>'
+          +'</div>'
+          +'<div style="background:var(--white);border:1px solid var(--g100);border-radius:8px;padding:10px 12px;grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;">'
+            +'<div>'
+              +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Registros</div>'
+              +'<div style="font-size:13px;color:var(--g400);">'+(nreg>0?nreg+' registro'+(nreg>1?'s':''):'Nenhum registro')+'</div>'
+            +'</div>'
+            +'<button class="btn" style="font-size:12px;padding:6px 14px;" onclick="abrirReg(\''+s.id+'\')">'
+              +'📋 Gerenciar Registros'+(nreg>0?' <span style="background:var(--blue);color:#fff;border-radius:20px;padding:0 6px;font-size:10px;">'+nreg+'</span>':'')
+            +'</button>'
+          +'</div>'
+        +'</div>'
+        +'<div style="padding:0 20px 12px;display:flex;justify-content:space-between;align-items:center;">'
+          +'<button class="btn dng" style="font-size:11px;padding:4px 12px;" onclick="abrirDelSol(\''+s.id+'\')">🗑 Excluir pedido</button>'
+          +'<button class="btn" style="font-size:11px;padding:3px 10px;" onclick="toggleSolRow(\''+s.id+'\')">▲ Recolher</button>'
+        +'</div>'
+      +'</td>'
+    +'</tr>';
+    return mainRow+detRow;
+  }).join('');
+}
+var delSolId=null;
+function abrirDelSol(id){
+  if(!podeEditar()) return;
+  delSolId=id;
+  var s=sols.filter(function(x){return x.id===id;})[0];
+  if(s) document.getElementById('del-sol-info').textContent=(s.numero?'Nº '+s.numero+' — ':'')+s.nome;
+  document.getElementById('del-sol-ov').classList.add('show');
+}
+function fecharDelSol(){document.getElementById('del-sol-ov').classList.remove('show');delSolId=null;}
+function confirmarDelSol(){
+  if(!delSolId)return;
+  var _delId=delSolId;
+  sols=sols.filter(function(s){return s.id!==_delId;});
+  deleteSolFromDB(_delId); updateStats();
+  document.getElementById('del-sol-ov').classList.remove('show');
+  delSolId=null;
+}
+
+var notifSolId=null;
+var cancSolId=null;
+var cancElRef=null;
+
+function mudarSol(id,status,el){
+  if(status==='Cancelada'){
+    cancSolId=id;
+    cancElRef=el;
+    var s=sols.filter(function(x){return x.id===id;})[0];
+    if(s){
+      document.getElementById('canc-info').textContent='Nº: '+(s.numero||'—')+' — '+s.nome;
+      document.getElementById('canc-motivo').value='';
+      document.getElementById('canc-ov').classList.add('show');
+    }
+    return;
+  }
+  for(var i=0;i<sols.length;i++){
+    if(sols[i].id===id){
+      sols[i].status=status;
+      if(status==='Concluída') sols[i].concluidoEm=new Date().toLocaleDateString('pt-BR');
+      break;
+    }
+  }
+  if(el){el.className='sol-sel '+solClass(status);}
+  var _ms=sols.filter(function(x){return x.id===id;})[0]; if(_ms) saveSolItem(_ms);
+  updateStats();
+  if(status==='Concluída'){
+    var s=sols.filter(function(x){return x.id===id;})[0];
+    if(s){
+      notifSolId=id;
+      document.getElementById('notif-num').textContent=s.numero||'—';
+      document.getElementById('notif-nome').textContent=s.nome;
+      document.getElementById('notif-tipo').textContent=s.tipo;
+      document.getElementById('notif-dest').value='';
+      document.getElementById('notif-msg').value='';
+      document.getElementById('notif-ov').classList.add('show');
+    }
+  }
+}
+
+function fecharCanc(){
+  document.getElementById('canc-ov').classList.remove('show');
+  if(cancSolId && cancElRef){
+    var s=sols.filter(function(x){return x.id===cancSolId;})[0];
+    if(s){ cancElRef.value=s.status; cancElRef.className='sol-sel '+solClass(s.status); }
+  }
+  cancSolId=null; cancElRef=null;
+}
+
+function confirmarCanc(){
+  var motivo=document.getElementById('canc-motivo').value.trim();
+  if(!motivo){alert('Informe o motivo do cancelamento.');return;}
+  for(var i=0;i<sols.length;i++){
+    if(sols[i].id===cancSolId){
+      sols[i].status='Cancelada';
+      sols[i].concluidoEm=new Date().toLocaleDateString('pt-BR');
+      if(!sols[i].registros) sols[i].registros=[];
+      sols[i].registros.push({
+        data:new Date().toISOString().split('T')[0],
+        autor:'Sistema',
+        obs:'❌ CANCELAMENTO: '+motivo,
+        criadoEm:new Date().toISOString()
+      });
+      break;
+    }
+  }
+  if(cancElRef){cancElRef.className='sol-sel '+solClass('Cancelada');}
+  document.getElementById('canc-ov').classList.remove('show');
+  var _cs=sols.filter(function(x){return x.id===cancSolId;})[0]; if(_cs) saveSolItem(_cs);
+  updateStats();
+  cancSolId=null; cancElRef=null;
+}
+
+function fecharNotif(){
+  // Fecha sem enviar — marca email como não enviado
+  document.getElementById('notif-ov').classList.remove('show');
+  notifSolId=null;
+}
+
+function enviarNotificacao(){
+  var dest=document.getElementById('notif-dest').value.trim();
+  if(!dest){alert('Informe ao menos um e-mail destinatário.');return;}
+  var s=sols.filter(function(x){return x.id===notifSolId;})[0];
+  if(!s){fecharNotif();return;}
+  var msg=document.getElementById('notif-msg').value.trim();
+  var subj=encodeURIComponent('[Script Atualizado] Nº '+s.numero+' – '+s.nome);
+  var body=encodeURIComponent(
+    'Informativo — Script de Conhecimento Atualizado\n'
+    +'=================================================\n\n'
+    +'Comunicamos que o script de conhecimento abaixo foi atualizado e já está disponível para consulta no portal.\n\n'
+    +'Nº do Script   : '+s.numero+'\n'
+    +'Nome do Script : '+s.nome+'\n'
+    +'Tipo de update : '+s.tipo+'\n'
+    +'Solicitado por : '+(s.solicitante||'—')+'\n'
+    +'Concluído em   : '+new Date().toLocaleDateString('pt-BR')+'\n\n'
+    +(msg?'OBSERVAÇÕES:\n------------\n'+msg+'\n\n':'')
+    +'=================================================\n'
+    +'Central de Suporte em TI — Base de Conhecimento\n'
+    +'Contato: basedeconhecimento@tcu.gov.br'
+  );
+  // Suporte a múltiplos destinatários separados por ;
+  var destinatarios=dest.split(';').map(function(e){return e.trim();}).filter(Boolean).join(',');
+  window.location.href='mailto:'+encodeURIComponent(destinatarios)+'?subject='+subj+'&body='+body;
+  // Marca e-mail como enviado
+  for(var i=0;i<sols.length;i++){
+    if(sols[i].id===notifSolId){
+      sols[i].emailEnviado=true;
+      sols[i].emailEnviadoEm=new Date().toLocaleDateString('pt-BR');
+      sols[i].emailDestinatarios=dest;
+      break;
+    }
+  }
+  var _ns=sols.filter(function(x){return x.id===notifSolId;})[0]; if(_ns) saveSolItem(_ns);
+  updateStats();
+  document.getElementById('notif-ov').classList.remove('show');
+  notifSolId=null;
+}
+function atualizarGestor(){
+  var cat=document.getElementById('at-cat').value;
+  var box=document.getElementById('at-gestor-box');
+  if(cat){
+    var g=getGestor(cat);
+    document.getElementById('at-gestor-nome').textContent=g;
+    box.style.display='flex';
+  } else {
+    box.style.display='none';
+  }
+}
+
+function selecionarBrevidade(el){
+  var isUrgente=el.value==='Sim';
+  document.getElementById('brev-motivo-box').style.display=isUrgente?'block':'none';
+  var simLbl=document.getElementById('brev-sim-lbl');
+  var naoLbl=document.getElementById('brev-nao-lbl');
+  simLbl.style.background=isUrgente?'#FAEEDA':'var(--g50)';
+  simLbl.style.borderColor=isUrgente?'#EF9F27':'var(--g200)';
+  simLbl.style.color=isUrgente?'var(--amber)':'var(--g700)';
+  simLbl.style.fontWeight=isUrgente?'600':'400';
+  naoLbl.style.background=!isUrgente?'var(--blue-lt)':'var(--g50)';
+  naoLbl.style.borderColor=!isUrgente?'var(--blue-mid)':'var(--g200)';
+  naoLbl.style.color=!isUrgente?'var(--blue-dk)':'var(--g700)';
+  naoLbl.style.fontWeight=!isUrgente?'600':'400';
+}
+function enviarSolicitacao(){
+  var num=document.getElementById('at-num').value.trim();
+  var chamado=document.getElementById('at-chamado').value.trim();
+  var nome=document.getElementById('at-nome').value.trim();
+  var cat=document.getElementById('at-cat').value;
+  var tipo=document.getElementById('at-tipo').value;
+  var desc=document.getElementById('at-desc').value.trim();
+  var sol=document.getElementById('at-sol').value.trim();
+  var email=document.getElementById('at-email').value.trim();
+  var brevRad=document.querySelector('input[name="brevidade"]:checked');
+  var brevidade=brevRad?brevRad.value:'Não';
+  var brevMotivo=brevidade==='Sim'?document.getElementById('at-brevidade-motivo').value.trim():'';
+  if(!nome||!cat||!tipo||!desc||!sol){alert('Preencha todos os campos obrigatórios:\n• Nome do Script\n• Categoria\n• Tipo de atualização\n• Descrição\n• Seu nome');return;}
+  var gestor=getGestor(cat);
+  var subj=encodeURIComponent((brevidade==='Sim'?'🚨 [URGENTE] ':'')+'[Atualização de Script] '+(num?'Nº '+num+' – ':'')+nome);
+  var body=encodeURIComponent(
+    'Solicitação de Atualização de Script de Conhecimento\n'
+    +'=====================================================\n\n'
+    +(num?'Nº do Script    : '+num+'\n':'')
+    +(chamado?'Chamado         : '+chamado+'\n':'')
+    +'Nome do Script  : '+nome+'\n'
+    +'Categoria       : '+cat+'\n'
+    +'Gestor          : '+gestor+'\n'
+    +'Tipo            : '+tipo+'\n'
+    +'Solicitante     : '+sol+'\n'
+    +'E-mail          : '+(email||'Não informado')+'\n'
+    +'Brevidade       : '+brevidade+(brevMotivo?' — '+brevMotivo:'')+'\n'
+    +'Data            : '+new Date().toLocaleDateString('pt-BR')+'\n\n'
+    +'DESCRIÇÃO DA ATUALIZAÇÃO / CORREÇÃO:\n'
+    +'-------------------------------------\n'
+    +desc+'\n\n'
+    +'=====================================================\n'
+    +'Solicitação gerada pelo Portal de Scripts de Conhecimento – Central de Suporte em TI'
+  );
+  // 1. Salva primeiro
+  var novaSol={id:uid(),numero:num,chamado:chamado,nome:nome,cat:cat,gestor:gestor,tipo:tipo,desc:desc,solicitante:sol,email:email,brevidade:brevidade,brevMotivo:brevMotivo,data:new Date().toLocaleDateString('pt-BR'),status:'Pendente',registros:[]};
+  sols.push(novaSol);
+  saveSolItem(novaSol);
+  updateStats();
+
+  // 2. Abre o e-mail sem navegar (window.open não interrompe o JS)
+  try { window.open('mailto:basedeconhecimento@tcu.gov.br?subject='+subj+'&body='+body); }
+  catch(e){ window.location.href='mailto:basedeconhecimento@tcu.gov.br?subject='+subj+'&body='+body; }
+
+  document.getElementById('at-toast').classList.add('show');
+  setTimeout(function(){
+    document.getElementById('at-toast').classList.remove('show');
+    limparSolicitacao();
+    goPage('gestao',document.querySelectorAll('.ntab')[0]);
+  },3000);
+}
+function limparSolicitacao(){
+  ['at-num','at-chamado','at-nome','at-desc','at-sol','at-email','at-brevidade-motivo'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('at-tipo').value='';
+  document.getElementById('at-cat').value='';
+  document.getElementById('at-gestor-box').style.display='none';
+  document.getElementById('at-toast').classList.remove('show');
+  // Reset brevidade
+  document.querySelectorAll('input[name="brevidade"]').forEach(function(r){r.checked=false;});
+  document.getElementById('brev-motivo-box').style.display='none';
+  var simLbl=document.getElementById('brev-sim-lbl');
+  var naoLbl=document.getElementById('brev-nao-lbl');
+  [simLbl,naoLbl].forEach(function(l){l.style.background='var(--g50)';l.style.borderColor='var(--g200)';l.style.color='var(--g700)';l.style.fontWeight='400';});
+}
+
+// ============================================================
+// REGISTROS POR SOLICITAÇÃO
+// ============================================================
+var regSolId=null;
+function abrirReg(id){
+  regSolId=id;
+  var s=sols.filter(function(x){return x.id===id;})[0];
+  if(!s)return;
+  document.getElementById('reg-sol-nome').textContent='Nº '+s.numero+' — '+s.nome;
+  document.getElementById('reg-data').value=new Date().toISOString().split('T')[0];
+  document.getElementById('reg-autor').value='';
+  document.getElementById('reg-obs').value='';
+  renderRegistros(s);
+  document.getElementById('reg-ov').classList.add('show');
+}
+function fecharReg(){document.getElementById('reg-ov').classList.remove('show');regSolId=null;}
+function renderRegistros(s){
+  var lista=document.getElementById('reg-lista');
+  if(!s.registros||!s.registros.length){
+    lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--g400);font-size:13px;font-style:italic;">Nenhum registro ainda. Adicione abaixo.</div>';
+    return;
+  }
+  lista.innerHTML=s.registros.map(function(r,i){
+    return'<div style="border:1px solid var(--g100);border-radius:8px;padding:12px 14px;margin-bottom:8px;background:var(--white);">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+        +'<div style="display:flex;gap:10px;align-items:center;">'
+          +'<span style="font-size:12px;font-weight:600;color:var(--blue);">'+esc(fmtD(r.data))+'</span>'
+          +(r.autor?'<span style="font-size:11px;color:var(--g400);">por '+esc(r.autor)+'</span>':'')
+        +'</div>'
+        +'<button onclick="removerRegistro('+i+')" style="border:none;background:transparent;cursor:pointer;color:var(--g400);font-size:13px;padding:2px 6px;border-radius:4px;" title="Remover">×</button>'
+      +'</div>'
+      +'<div style="font-size:13px;color:var(--g700);white-space:pre-wrap;line-height:1.5;">'+esc(r.obs)+'</div>'
+    +'</div>';
+  }).join('');
+}
+function salvarRegistro(){
+  var data=document.getElementById('reg-data').value;
+  var obs=document.getElementById('reg-obs').value.trim();
+  var autor=document.getElementById('reg-autor').value.trim();
+  if(!data||!obs){alert('Preencha a data e a observação.');return;}
+  var s=sols.filter(function(x){return x.id===regSolId;})[0];
+  if(!s)return;
+  if(!s.registros)s.registros=[];
+  s.registros.push({data:data,obs:obs,autor:autor,criadoEm:new Date().toISOString()});
+  saveSolItem(s); renderRegistros(s); renderSols();
+  document.getElementById('reg-data').value=new Date().toISOString().split('T')[0];
+  document.getElementById('reg-autor').value='';
+  document.getElementById('reg-obs').value='';
+}
+function removerRegistro(idx){
+  var s=sols.filter(function(x){return x.id===regSolId;})[0];
+  if(!s||!s.registros)return;
+  s.registros.splice(idx,1);
+  saveSolItem(s); renderRegistros(s); renderSols();
+}
+
+// ============================================================
+// EXPORTAR XLS
+// ============================================================
+function exportarXLS(){
+  var rows=[['Data','Nº Script','Chamado','Nome do Script','Categoria','Gestor','Tipo de Atualização','Descrição','Solicitante','E-mail','Status','Qtd. Registros','Registros (data | autor | observação)']];
+  sols.forEach(function(s){
+    var regsStr=(s.registros&&s.registros.length)?s.registros.map(function(r){return fmtD(r.data)+(r.autor?' | '+r.autor:'')+' | '+r.obs;}).join('\n'):'';
+    rows.push([s.data||'',s.numero||'',s.chamado||'',s.nome||'',s.cat||'',s.gestor||'',s.tipo||'',s.desc||'',s.solicitante||'',s.email||'',s.status||'',(s.registros&&s.registros.length)||0,regsStr]);
+  });
+  var xml='<?xml version="1.0" encoding="UTF-8"?>'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +'<Styles><Style ss:ID="H"><Font ss:Bold="1"/><Interior ss:Color="#185FA5" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>'
+    +'<Worksheet ss:Name="Solicitações"><Table>';
+  rows.forEach(function(row,ri){
+    xml+='<Row>';
+    row.forEach(function(cell){
+      xml+='<Cell'+(ri===0?' ss:StyleID="H"':'')+'><Data ss:Type="String">'+String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</Data></Cell>';
+    });
+    xml+='</Row>';
+  });
+  xml+='</Table></Worksheet></Workbook>';
+  var blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='solicitacoes_scripts_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xls';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// SUGESTÕES
+// ============================================================
+function setPrio(p,btn){
+  prio=p;
+  document.querySelectorAll('.pb').forEach(function(b){b.className='pb';});
+  btn.classList.add('sl'+p);
+}
+function enviarSugestao(){
+  if(!document.getElementById('sg-desc').value.trim()){alert('Preencha a descrição da melhoria.');return;}
+  document.getElementById('sg-toast').classList.add('show');
+  setTimeout(limparSugestao,4500);
+}
+function limparSugestao(){
+  ['sg-nome','sg-area','sg-email','sg-script','sg-desc','sg-just'].forEach(function(id){document.getElementById(id).value='';});
+  prio=''; document.querySelectorAll('.pb').forEach(function(b){b.className='pb';});
+  document.getElementById('sg-toast').classList.remove('show');
+}
+
+// ============================================================
+// GERAR PDF
+// ============================================================
+function gerarPDF(id){
+  var s=scripts.filter(function(x){return x.id===id;})[0];
+  if(!s)return;
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var W=210,M=15,TW=W-2*M,LW=58,VW=TW-LW;
+  var y=M;
+  function newPageIfNeeded(h){if(y+(h||10)>274){doc.addPage();y=M;}}
+  // Cabeçalho
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(20,22,26);
+  doc.text('Central de Suporte em TI',M,y);
+  doc.line(M,y+1,M+doc.getTextWidth('Central de Suporte em TI'),y+1);
+  y+=12;
+  function drawRow(lbl,val,full){
+    var lines=doc.splitTextToSize(val||'—',full?TW-4:VW-4);
+    var rh=Math.max(9,lines.length*5+5);
+    newPageIfNeeded(rh);
+    doc.setDrawColor(150,150,150);
+    if(!full){
+      doc.setFillColor(240,240,240);doc.rect(M,y,LW,rh,'FD');
+      doc.rect(M+LW,y,VW,rh,'D');
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(60,60,60);
+      doc.text(lbl,M+2,y+6);
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(20,22,26);
+      doc.text(lines,M+LW+2,y+6);
+    } else {
+      doc.rect(M,y,TW,rh,'D');
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(20,22,26);
+      doc.text(lines,M+2,y+6);
+    }
+    y+=rh;
+  }
+  function secHeader(txt){
+    newPageIfNeeded(8);
+    doc.setFillColor(240,240,240);doc.rect(M,y,TW,8,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(24,95,165);
+    doc.setDrawColor(150,150,150);doc.rect(M,y,TW,8,'D');
+    doc.text(txt,M+2,y+5.5);
+    y+=8;
+    doc.setTextColor(20,22,26);doc.setFont('helvetica','normal');
+  }
+  // Identificação
+  doc.setDrawColor(150,150,150);
+  doc.setFillColor(240,240,240);doc.rect(M,y,LW,8,'FD');
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(60,60,60);
+  doc.text('Identificação do procedimento',M+2,y+5.5);
+  var nw=TW*0.38,tw=TW-nw-LW;
+  doc.setFillColor(248,248,248);doc.rect(M+LW,y,nw,8,'FD');doc.rect(M+LW+nw,y,tw,8,'FD');
+  doc.setFontSize(8);doc.text('Número',M+LW+2,y+5.5);doc.text('Título',M+LW+nw+2,y+5.5);
+  y+=8;
+  doc.setDrawColor(150,150,150);doc.rect(M,y,LW,9,'D');doc.rect(M+LW,y,nw,9,'D');doc.rect(M+LW+nw,y,tw,9,'D');
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(20,22,26);
+  doc.text(s.numero||'—',M+LW+2,y+6);
+  var tl=doc.splitTextToSize(s.titulo||'—',tw-4);doc.text(tl,M+LW+nw+2,y+6);
+  y+=10;
+  secHeader('Assunto');drawRow('',s.assunto,true);
+  secHeader('Área responsável pela validação');drawRow('',s.area||'Não informada',true);
+  secHeader('Resolução (como fazer?)');
+  doc.setFillColor(245,245,245);doc.rect(M,y,LW,8,'FD');doc.rect(M+LW,y,TW-LW,8,'FD');
+  doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(100,100,100);
+  doc.text('Fonte: Verdana / Tamanho: 9',M+2,y+5.5);
+  doc.setDrawColor(150,150,150);doc.rect(M,y,LW,8,'D');doc.rect(M+LW,y,TW-LW,8,'D');
+  y+=8;
+  var rl=doc.splitTextToSize(s.resolucao||'—',TW-4);
+  var rh2=Math.max(20,rl.length*5+8);
+  newPageIfNeeded(rh2);
+  doc.rect(M,y,TW,rh2,'D');
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(20,22,26);
+  doc.text(rl,M+2,y+6);
+  y+=rh2+5;
+  newPageIfNeeded(30);
+  var cw=TW/3;
+  doc.setFillColor(240,240,240);
+  ['Data da Alteração','Responsável','Cargo'].forEach(function(h,i){
+    doc.rect(M+i*cw,y,cw,8,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(40,40,40);
+    doc.setDrawColor(150,150,150);doc.rect(M+i*cw,y,cw,8,'D');
+    doc.text(h,M+i*cw+2,y+5.5);
+  });
+  y+=8;
+  var aa=s.alteracoes&&s.alteracoes.length?s.alteracoes:[{data:'',resp:'',cargo:''}];
+  aa.forEach(function(a){
+    newPageIfNeeded(8);
+    [fmtD(a.data),a.resp||'—',a.cargo||'—'].forEach(function(v,i){
+      doc.setDrawColor(150,150,150);doc.rect(M+i*cw,y,cw,8,'D');
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(20,22,26);
+      doc.text(String(v).substring(0,32),M+i*cw+2,y+5.5);
+    });
+    y+=8;
+  });
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text('Gerado em: '+new Date().toLocaleDateString('pt-BR')+' — Central de Suporte em TI',W/2,290,{align:'center'});
+  doc.save('script_'+(s.numero||'novo').replace(/[^a-z0-9]/gi,'_')+'.pdf');
+}
+
+// ============================================================
+// AUTENTICAÇÃO
+// ============================================================
+var USERS={
+  gestao:   {senha:'tcu@2025', perfil:'gestao',   nome:'Gestor',      initials:'G'},
+  colaborador:{senha:'tcu@2025', perfil:'colaborador', nome:'Colaborador', initials:'C'}
+};
+var currentUser=null;
+var loginTabSel='gestao';
+
+function switchLoginTab(t){
+  loginTabSel=t;
+  document.getElementById('lt-gestao').classList.toggle('active',t==='gestao');
+  document.getElementById('lt-colab').classList.toggle('active',t==='colaborador');
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pass').value='';
+  document.getElementById('l-err').classList.remove('show');
+  document.getElementById('l-user').focus();
+}
+
+function fazerLogin(){
+  var user=document.getElementById('l-user').value.trim().toLowerCase();
+  var pass=document.getElementById('l-pass').value;
+  var err=document.getElementById('l-err');
+  err.classList.remove('show');
+  // Valida perfil vs aba selecionada
+  var u=USERS[user];
+  if(!u||u.senha!==pass||(loginTabSel==='gestao'&&u.perfil!=='gestao')||(loginTabSel==='colaborador'&&u.perfil!=='colaborador')){
+    err.classList.add('show'); return;
+  }
+  currentUser=u;
+  // Esconde login, mostra portal
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('topnav').style.display='flex';
+  document.getElementById('main-content').style.display='block';
+  // Atualiza badge do usuário
+  var av=document.getElementById('u-avatar');
+  av.textContent=u.initials;
+  av.className='user-avatar '+(u.perfil==='gestao'?'ua-gestao':'ua-colab');
+  document.getElementById('u-name').textContent=u.nome;
+  var rl=document.getElementById('u-role');
+  rl.textContent=u.perfil==='gestao'?'Gestor':'Colaborador';
+  rl.className='user-role '+(u.perfil==='gestao'?'ur-gestao':'ur-colab');
+  aplicarPermissoes();
+  loadAll(); renderTable(); updateStats(); resetForm();
+  iniciarAutoRefresh();
+}
+
+function fazerLogout(){
+  pararAutoRefresh();
+  currentUser=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('topnav').style.display='none';
+  document.getElementById('main-content').style.display='none';
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pass').value='';
+  document.getElementById('l-err').classList.remove('show');
+}
+
+function aplicarPermissoes(){
+  var isGestor=currentUser&&currentUser.perfil==='gestao';
+  // Banner somente leitura na gestão para colaborador
+  var banner=document.getElementById('readonly-banner');
+  if(banner) banner.classList.toggle('show',!isGestor);
+  // Botão + Novo Script
+  var btnNovo=document.querySelector('.btn.prim[onclick="novoScript()"]');
+  if(btnNovo) btnNovo.style.display=isGestor?'':'none';
+  // Filtro de status (colaborador pode usar)
+  // Aba gestão para colaborador: tabs já corretos, apenas bloquear ações de edição
+}
+
+function podeEditar(){
+  if(!currentUser||currentUser.perfil!=='gestao'){
+    alert('Acesso restrito. Apenas gestores podem realizar esta ação.');
+    return false;
+  }
+  return true;
+}
+
+// Wrap funções restritas
+var _salvarScript=salvarScript;
+salvarScript=function(){if(podeEditar())_salvarScript();};
+var _confirmarDel=confirmarDel;
+confirmarDel=function(){if(podeEditar())_confirmarDel();};
+var _mudarSol=mudarSol;
+mudarSol=function(id,status,el){if(podeEditar())_mudarSol(id,status,el);else if(el){var s=sols.filter(function(x){return x.id===id;})[0];if(s){el.value=s.status;el.className='sol-sel '+solClass(s.status);}}};
+var _salvarRegistro=salvarRegistro;
+salvarRegistro=function(){if(podeEditar())_salvarRegistro();};
+var _confirmarCanc=confirmarCanc;
+confirmarCanc=function(){if(podeEditar())_confirmarCanc();};
+
+function _mostrarNotificacao(isNova){
+  var el = document.getElementById('refresh-toast');
+  if(!el) return;
+  el.textContent = isNova ? '🔔 Nova solicitação recebida!' : '🔄 Solicitações atualizadas.';
+  el.style.display = 'flex';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(function(){ el.style.display='none'; }, 4000);
+}
+
+// Listener Firestore em tempo real para solicitações
+var _unsubscribeSols = null;
+function iniciarAutoRefresh(){
+  if(_unsubscribeSols) _unsubscribeSols();
+  _unsubscribeSols = db.collection(COL_SOLS).onSnapshot(function(snap){
+    var anterior = sols.length;
+    sols = [];
+    snap.forEach(function(doc){ sols.push(doc.data()); });
+    updateStats();
+    if(sols.length > anterior && currentUser) _mostrarNotificacao(true);
+  }, function(err){ console.error('listener Firestore:', err); });
+}
+
+function pararAutoRefresh(){
+  if(_unsubscribeSols){ _unsubscribeSols(); _unsubscribeSols=null; }
+}
+
+document.getElementById('l-user').focus();
+</script>
+<!-- TOAST AUTO-REFRESH -->
+<div id="refresh-toast" style="display:none;position:fixed;bottom:20px;right:20px;z-index:300;background:var(--blue-dk);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:fi .2s ease;"></div>
+
+</body>
+</html>
