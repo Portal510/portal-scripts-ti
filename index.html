@@ -233,6 +233,7 @@ tbody tr:hover td{background:var(--g50);}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -314,7 +315,12 @@ tbody tr:hover td{background:var(--g50);}
       <option value="Concluída">✅ Concluída</option>
       <option value="Cancelada">❌ Cancelada</option>
     </select>
+    <button class="btn" style="font-size:12px;padding:7px 14px;" onclick="atualizarDados(this)">🔄 Atualizar</button>
     <button class="btn" style="font-size:12px;padding:7px 14px;background:var(--green-lt);color:var(--green);border-color:#97C459;" onclick="exportarXLS()">↓ Exportar XLS</button>
+    <label class="btn" style="font-size:12px;padding:7px 14px;cursor:pointer;background:var(--blue-lt);color:var(--blue-dk);border-color:var(--blue-mid);" title="Importar planilha XLS/XLSX">
+      ↑ Importar XLS
+      <input type="file" id="import-xls" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importarXLS(this)"/>
+    </label>
   </div>
   <!-- RESULTADOS DA PESQUISA GLOBAL -->
   <div id="global-results" style="display:none;margin-bottom:16px;"></div>
@@ -1198,9 +1204,14 @@ function renderSols(){
               +'<div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Registros</div>'
               +'<div style="font-size:13px;color:var(--g400);">'+(nreg>0?nreg+' registro'+(nreg>1?'s':''):'Nenhum registro')+'</div>'
             +'</div>'
-            +'<button class="btn" style="font-size:12px;padding:6px 14px;" onclick="abrirReg(\''+s.id+'\')">'
-              +'📋 Gerenciar Registros'+(nreg>0?' <span style="background:var(--blue);color:#fff;border-radius:20px;padding:0 6px;font-size:10px;">'+nreg+'</span>':'')
-            +'</button>'
+            +'<div style="display:flex;gap:8px;">'
+              +'<button class="btn" style="font-size:12px;padding:6px 12px;background:var(--blue-lt);color:var(--blue-dk);border-color:var(--blue-mid);" onclick="enviarEmailSolicitacao(\''+s.id+'\')">'
+                +'✉ Enviar e-mail'
+              +'</button>'
+              +'<button class="btn" style="font-size:12px;padding:6px 14px;" onclick="abrirReg(\''+s.id+'\')">'
+                +'📋 Gerenciar Registros'+(nreg>0?' <span style="background:var(--blue);color:#fff;border-radius:20px;padding:0 6px;font-size:10px;">'+nreg+'</span>':'')
+              +'</button>'
+            +'</div>'
           +'</div>'
         +'</div>'
         +'<div style="padding:0 20px 12px;display:flex;justify-content:space-between;align-items:center;">'
@@ -1332,7 +1343,12 @@ function enviarNotificacao(){
   );
   // Suporte a múltiplos destinatários separados por ;
   var destinatarios=dest.split(';').map(function(e){return e.trim();}).filter(Boolean).join(',');
-  window.location.href='mailto:'+encodeURIComponent(destinatarios)+'?subject='+subj+'&body='+body;
+  var mLink=document.createElement('a');
+  mLink.href='mailto:'+encodeURIComponent(destinatarios)+'?subject='+subj+'&body='+body;
+  mLink.style.display='none';
+  document.body.appendChild(mLink);
+  mLink.click();
+  setTimeout(function(){document.body.removeChild(mLink);},500);
   // Marca e-mail como enviado
   for(var i=0;i<sols.length;i++){
     if(sols[i].id===notifSolId){
@@ -1413,9 +1429,13 @@ function enviarSolicitacao(){
   saveSolItem(novaSol);
   updateStats();
 
-  // 2. Abre o e-mail sem navegar (window.open não interrompe o JS)
-  try { window.open('mailto:basedeconhecimento@tcu.gov.br?subject='+subj+'&body='+body); }
-  catch(e){ window.location.href='mailto:basedeconhecimento@tcu.gov.br?subject='+subj+'&body='+body; }
+  // 2. Abre o e-mail — método anchor funciona em todos os dispositivos
+  var mailLink = document.createElement('a');
+  mailLink.href = 'mailto:basedeconhecimento@tcu.gov.br?subject='+subj+'&body='+body;
+  mailLink.style.display = 'none';
+  document.body.appendChild(mailLink);
+  mailLink.click();
+  setTimeout(function(){ document.body.removeChild(mailLink); }, 500);
 
   document.getElementById('at-toast').classList.add('show');
   setTimeout(function(){
@@ -1730,6 +1750,120 @@ var _salvarRegistro=salvarRegistro;
 salvarRegistro=function(){if(podeEditar())_salvarRegistro();};
 var _confirmarCanc=confirmarCanc;
 confirmarCanc=function(){if(podeEditar())_confirmarCanc();};
+
+// ============================================================
+// ATUALIZAR DADOS MANUALMENTE
+// ============================================================
+function atualizarDados(btn){
+  if(btn){btn.textContent='🔄 Atualizando...';btn.disabled=true;}
+  db.collection(COL_SOLS).get().then(function(snap){
+    sols=[];
+    snap.forEach(function(doc){sols.push(doc.data());});
+    updateStats();
+    if(btn){btn.textContent='🔄 Atualizar';btn.disabled=false;}
+    _mostrarNotificacao(false);
+  }).catch(function(e){
+    console.error(e);
+    if(btn){btn.textContent='🔄 Atualizar';btn.disabled=false;}
+  });
+}
+
+// ============================================================
+// ENVIAR E-MAIL DE CÓPIA DA SOLICITAÇÃO
+// ============================================================
+function enviarEmailSolicitacao(id){
+  var s=sols.filter(function(x){return x.id===id;})[0];
+  if(!s)return;
+  var subj=encodeURIComponent('[Cópia de Pedido] '+(s.numero?'Nº '+s.numero+' – ':'')+s.nome);
+  var body=encodeURIComponent(
+    'Cópia da Solicitação de Atualização de Script\n'
+    +'=====================================================\n\n'
+    +(s.numero?'Nº do Script    : '+s.numero+'\n':'')
+    +(s.chamado?'Chamado         : '+s.chamado+'\n':'')
+    +'Nome do Script  : '+s.nome+'\n'
+    +'Categoria       : '+(s.cat||'—')+'\n'
+    +'Gestor          : '+(s.gestor||'—')+'\n'
+    +'Tipo            : '+(s.tipo||'—')+'\n'
+    +'Solicitante     : '+(s.solicitante||'—')+'\n'
+    +'E-mail          : '+(s.email||'Não informado')+'\n'
+    +'Brevidade       : '+(s.brevidade||'Não')+(s.brevMotivo?' — '+s.brevMotivo:'')+'\n'
+    +'Data            : '+(s.data||'—')+'\n'
+    +'Status atual    : '+(s.status||'—')+'\n\n'
+    +'DESCRIÇÃO DA ATUALIZAÇÃO / CORREÇÃO:\n'
+    +'-------------------------------------\n'
+    +(s.desc||'—')+'\n\n'
+    +'=====================================================\n'
+    +'Central de Suporte em TI — Base de Conhecimento\n'
+    +'basedeconhecimento@tcu.gov.br'
+  );
+  var ml=document.createElement('a');
+  ml.href='mailto:basedeconhecimento@tcu.gov.br?subject='+subj+'&body='+body;
+  ml.style.display='none';
+  document.body.appendChild(ml);
+  ml.click();
+  setTimeout(function(){document.body.removeChild(ml);},500);
+}
+
+// ============================================================
+// IMPORTAR XLS
+// ============================================================
+function importarXLS(input){
+  if(!podeEditar()) return;
+  var file=input.files[0];
+  if(!file){return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=new Uint8Array(e.target.result);
+      var wb=XLSX.read(data,{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(rows.length<2){alert('Planilha vazia ou sem dados.');return;}
+      var header=rows[0].map(function(h){return String(h).toLowerCase().trim();});
+      var importados=0;
+      for(var i=1;i<rows.length;i++){
+        var row=rows[i];
+        function col(names){
+          for(var n=0;n<names.length;n++){
+            var idx=header.indexOf(names[n]);
+            if(idx>=0&&row[idx]!==''&&row[idx]!==undefined) return String(row[idx]);
+          }
+          return '';
+        }
+        var nome=col(['nome do script','nome','script']);
+        if(!nome) continue;
+        var novaSol={
+          id:uid(),
+          numero:col(['nº script','nº do script','numero','número']),
+          chamado:col(['chamado']),
+          nome:nome,
+          cat:col(['categoria','cat']),
+          gestor:col(['gestor']),
+          tipo:col(['tipo de atualização','tipo','tipo de atualizacao']),
+          desc:col(['descrição','descricao','descrição detalhada']),
+          solicitante:col(['solicitante']),
+          email:col(['e-mail','email']),
+          brevidade:col(['brevidade'])||'Não',
+          brevMotivo:col(['motivo brevidade','motivo da urgência']),
+          data:col(['data'])||new Date().toLocaleDateString('pt-BR'),
+          status:col(['status'])||'Pendente',
+          registros:[]
+        };
+        if(novaSol.cat&&!novaSol.gestor) novaSol.gestor=getGestor(novaSol.cat);
+        sols.push(novaSol);
+        saveSolItem(novaSol);
+        importados++;
+      }
+      input.value='';
+      updateStats();
+      alert('✅ '+importados+' solicitação(ões) importada(s) com sucesso!');
+    }catch(err){
+      alert('Erro ao importar: '+err.message);
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
 
 function _mostrarNotificacao(isNova){
   var el = document.getElementById('refresh-toast');
