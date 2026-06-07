@@ -296,17 +296,17 @@ tbody tr:hover td{background:var(--g50);}
   </div>
 
   <div class="stats">
-    <div class="scard"><div class="slbl">Canceladas</div><div class="snum" style="color:var(--red);" id="st-total">0</div></div>
     <div class="scard"><div class="slbl">Pendentes</div><div class="snum na" id="st-pend">0</div></div>
-    <div class="scard"><div class="slbl">Concluídas</div><div class="snum ng" id="st-conc">0</div></div>
     <div class="scard"><div class="slbl">Em andamento</div><div class="snum nb" id="st-and">0</div></div>
+    <div class="scard"><div class="slbl">Concluídas</div><div class="snum ng" id="st-conc">0</div></div>
+    <div class="scard"><div class="slbl">Canceladas</div><div class="snum" style="color:var(--red);" id="st-total">0</div></div>
   </div>
 
   <!-- BARRA DE PESQUISA GLOBAL -->
   <div class="toolbar" style="margin-bottom:16px;">
     <div class="sw">
       <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="q-global" placeholder="Pesquisar solicitações (nome, número, chamado, solicitante, gestor...)" oninput="filtrarGlobal()"/>
+      <input type="text" id="q-global" placeholder="Pesquisar solicitações..." oninput="filtrarGlobal()"/>
     </div>
     <select id="q-global-status" class="flt" onchange="filtrarGlobal()">
       <option value="">Todos os status</option>
@@ -314,56 +314,75 @@ tbody tr:hover td{background:var(--g50);}
       <option value="Em andamento">🔄 Em andamento</option>
       <option value="Concluída">✅ Concluída</option>
       <option value="Cancelada">❌ Cancelada</option>
+      <option value="Excluída">🗑 Excluída</option>
     </select>
     <button class="btn" style="font-size:12px;padding:7px 14px;" onclick="atualizarDados(this)">🔄 Atualizar</button>
     <button class="btn" style="font-size:12px;padding:7px 14px;background:var(--green-lt);color:var(--green);border-color:#97C459;" onclick="exportarXLS()">↓ Exportar XLS</button>
-    <label class="btn" style="font-size:12px;padding:7px 14px;cursor:pointer;background:var(--blue-lt);color:var(--blue-dk);border-color:var(--blue-mid);" title="Importar planilha XLS/XLSX">
+    <label class="btn" style="font-size:12px;padding:7px 14px;cursor:pointer;background:var(--blue-lt);color:var(--blue-dk);border-color:var(--blue-mid);">
       ↑ Importar XLS
       <input type="file" id="import-xls" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importarXLS(this)"/>
     </label>
   </div>
-  <!-- RESULTADOS DA PESQUISA GLOBAL -->
   <div id="global-results" style="display:none;margin-bottom:16px;"></div>
 
-  <!-- PAINEL SOLICITAÇÕES PENDENTES -->
-  <div id="ppanel" class="ppanel" style="display:none;">
+  <!-- PAINEL 1: SOLICITAÇÕES DE ATUALIZAÇÃO (Pendente + Em andamento) -->
+  <div id="ppanel" class="ppanel" style="display:none;margin-bottom:16px;">
     <div class="ppanel-head">
       <div class="ppanel-title">
         <span class="pulse"></span>
         Solicitações de Atualização
         <span id="pp-badge" style="background:var(--amber);color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;"></span>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn" id="pp-toggle-btn" style="font-size:12px;padding:4px 12px;" onclick="togglePpanel()">Recolher ▲</button>
-      </div>
+      <button class="btn" id="pp-toggle-btn" style="font-size:12px;padding:4px 12px;" onclick="togglePpanel()">Recolher ▲</button>
     </div>
     <div id="pp-body" class="tbl-scroll">
-    <table style="width:100%;">
-      <thead><tr>
-        <th style="width:100px;"></th>
-        <th>Data</th>
-        <th>Nome do Script</th>
-        <th>Gestor</th>
-        <th>Status / Ação</th>
-      </tr></thead>
-      <tbody id="sol-tb"></tbody>
-    </table>
+      <table style="width:100%;">
+        <thead><tr>
+          <th style="width:120px;"></th><th>Data</th><th>Nome do Script</th>
+          <th>Gestor</th><th>Status / Ação</th>
+        </tr></thead>
+        <tbody id="sol-tb"></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- PAINEL SOLICITAÇÕES CONCLUÍDAS -->
-  <div id="conc-panel" style="display:none;margin-bottom:20px;">
+  <!-- PAINEL 2: CONCLUÍDAS -->
+  <div id="panel-conc" style="display:none;margin-bottom:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
       <div style="font-size:13px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:8px;">
         <span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;"></span>
-        Solicitações Concluídas / Canceladas
-        <span id="conc-badge" style="background:var(--green);color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;"></span>
+        Concluídas
+        <span id="badge-conc" style="background:var(--green);color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;"></span>
       </div>
-      <button class="btn" id="conc-toggle-btn" style="font-size:12px;padding:4px 12px;" onclick="toggleConcPanel()">Recolher ▲</button>
+      <button class="btn" id="btn-toggle-conc" style="font-size:12px;padding:4px 12px;" onclick="togglePanel('conc')">Recolher ▲</button>
     </div>
-    <div id="conc-body">
-      <div id="conc-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+    <div id="body-conc"><div id="list-conc" style="display:flex;flex-direction:column;gap:10px;"></div></div>
+  </div>
+
+  <!-- PAINEL 3: CANCELADAS -->
+  <div id="panel-canc" style="display:none;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;color:var(--red);display:flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span>
+        Canceladas
+        <span id="badge-canc" style="background:var(--red);color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;"></span>
+      </div>
+      <button class="btn" id="btn-toggle-canc" style="font-size:12px;padding:4px 12px;" onclick="togglePanel('canc')">Recolher ▲</button>
     </div>
+    <div id="body-canc"><div id="list-canc" style="display:flex;flex-direction:column;gap:10px;"></div></div>
+  </div>
+
+  <!-- PAINEL 4: EXCLUÍDAS -->
+  <div id="panel-excl" style="display:none;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;color:var(--g400);display:flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--g400);display:inline-block;"></span>
+        Excluídas
+        <span id="badge-excl" style="background:var(--g400);color:#fff;font-size:11px;padding:1px 8px;border-radius:20px;"></span>
+      </div>
+      <button class="btn" id="btn-toggle-excl" style="font-size:12px;padding:4px 12px;" onclick="togglePanel('excl')">Recolher ▲</button>
+    </div>
+    <div id="body-excl"><div id="list-excl" style="display:flex;flex-direction:column;gap:10px;"></div></div>
   </div>
 
 </div>
@@ -637,15 +656,12 @@ tbody tr:hover td{background:var(--g50);}
         </div>
         <span class="mtitle">Script atualizado — Notificar equipe</span>
       </div>
-      <button class="mx" onclick="fecharNotif()">×</button>
+      <button class="mx" onclick="cancelarConclusao()">×</button>
     </div>
-
     <div style="background:var(--green-lt);border:1px solid #97C459;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--green);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      Solicitação marcada como <strong>Concluída</strong>. Envie um e-mail para comunicar a equipe sobre a atualização do script.
+      Solicitação marcada como <strong>Concluída</strong>. Preencha os campos abaixo para enviar o e-mail de comunicação.
     </div>
-
-    <!-- Resumo do script -->
     <div style="background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;">
       <div style="font-size:11px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Script atualizado</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -654,29 +670,55 @@ tbody tr:hover td{background:var(--g50);}
         <div style="grid-column:1/-1;"><span style="color:var(--g400);font-size:12px;">Nome: </span><span id="notif-nome" style="font-weight:500;"></span></div>
       </div>
     </div>
-
     <div style="margin-bottom:14px;">
       <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Destinatários do e-mail <span style="color:var(--red)">*</span></label>
       <input type="text" id="notif-dest" placeholder="email1@tcu.gov.br; email2@tcu.gov.br; ..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);"/>
       <div style="font-size:11px;color:var(--g400);margin-top:4px;">Separe múltiplos e-mails com ponto e vírgula ( ; )</div>
     </div>
-
     <div style="margin-bottom:14px;">
-      <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Mensagem adicional (opcional)</label>
-      <textarea id="notif-msg" rows="3" placeholder="Adicione informações complementares sobre a atualização realizada..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);resize:none;line-height:1.5;"></textarea>
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Mensagem adicional <span style="color:var(--red)">*</span></label>
+      <textarea id="notif-msg" rows="4" placeholder="Descreva o que foi realizado, o que mudou no script e qualquer informação relevante para a equipe..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);resize:none;line-height:1.5;"></textarea>
     </div>
-
     <div style="background:var(--blue-lt);border:1px solid #B8D4F0;border-radius:6px;padding:9px 12px;font-size:12px;color:var(--blue-dk);margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      O e-mail será aberto no seu cliente de e-mail (Outlook, Gmail, etc.) já preenchido. Basta revisar e enviar.
+      O e-mail será aberto no seu cliente já preenchido. Ambos os campos são obrigatórios.
     </div>
-
     <div class="mfoot">
-      <button class="btn" onclick="fecharNotif()">Pular — não enviar</button>
+      <button class="btn dng" onclick="cancelarConclusao()">Cancelar conclusão</button>
       <button class="btn prim" onclick="enviarNotificacao()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        Abrir e-mail para enviar
+        Enviar e-mail e confirmar
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REABRIR PEDIDO -->
+<div class="overlay" id="reabrir-ov">
+  <div class="modal" style="max-width:460px;">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;background:var(--amber-lt);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+        </div>
+        <span class="mtitle">Reabrir Pedido</span>
+      </div>
+      <button class="mx" onclick="fecharReabrir()">×</button>
+    </div>
+    <div style="background:var(--amber-lt);border:1px solid #EF9F27;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:14px;">
+      O pedido retornará para <strong>Solicitações de Atualização</strong> com status <strong>Pendente</strong>.
+    </div>
+    <div style="margin-bottom:6px;">
+      <div style="font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;">Pedido</div>
+      <div id="reabrir-info" style="font-size:13px;color:var(--g700);background:var(--g50);border-radius:6px;padding:8px 12px;margin-bottom:14px;"></div>
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;">Motivo para reabertura <span style="color:var(--red)">*</span></label>
+      <textarea id="reabrir-motivo" rows="4" placeholder="Informe o motivo pelo qual este pedido está sendo reaberto..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);resize:none;line-height:1.5;"></textarea>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="fecharReabrir()">Cancelar</button>
+      <button class="btn prim" onclick="confirmarReabrir()">Reabrir como Pendente</button>
     </div>
   </div>
 </div>
@@ -786,14 +828,15 @@ function seedScript(){
 // STATS
 // ============================================================
 function updateStats(){
-  var canc=sols.filter(function(s){return s.status==='Cancelada';}).length;
   var pend=sols.filter(function(s){return s.status==='Pendente';}).length;
   var and=sols.filter(function(s){return s.status==='Em andamento';}).length;
   var conc=sols.filter(function(s){return s.status==='Concluída';}).length;
-  document.getElementById('st-total').textContent=canc;
+  var canc=sols.filter(function(s){return s.status==='Cancelada';}).length;
   document.getElementById('st-pend').textContent=pend;
   document.getElementById('st-and').textContent=and;
   document.getElementById('st-conc').textContent=conc;
+  document.getElementById('st-total').textContent=canc;
+  // Painel ativas
   var ativas=sols.filter(function(s){return s.status==='Pendente'||s.status==='Em andamento';});
   var pp=document.getElementById('ppanel');
   if(ativas.length>0){
@@ -803,11 +846,134 @@ function updateStats(){
   } else {
     pp.style.display='none';
   }
-  renderConcluidasPanel();
+  renderPanelCards('conc', sols.filter(function(s){return s.status==='Concluída';}));
+  renderPanelCards('canc', sols.filter(function(s){return s.status==='Cancelada';}));
+  renderPanelCards('excl', sols.filter(function(s){return s.status==='Excluída';}));
 }
 
 // ============================================================
-// PESQUISA GLOBAL
+// TOGGLE PAINÉIS
+// ============================================================
+var ppCollapsed=false;
+function togglePpanel(){
+  ppCollapsed=!ppCollapsed;
+  var body=document.getElementById('pp-body');
+  var btn=document.getElementById('pp-toggle-btn');
+  body.style.display=ppCollapsed?'none':'';
+  btn.textContent=ppCollapsed?'Expandir ▼':'Recolher ▲';
+}
+var _panelState={conc:false,canc:false,excl:false};
+function togglePanel(tipo){
+  _panelState[tipo]=!_panelState[tipo];
+  var body=document.getElementById('body-'+tipo);
+  var btn=document.getElementById('btn-toggle-'+tipo);
+  body.style.display=_panelState[tipo]?'none':'';
+  btn.textContent=_panelState[tipo]?'Expandir ▼':'Recolher ▲';
+}
+
+function toggleConcItem(headEl){
+  var card=headEl.closest('.conc-card');
+  if(!card)return;
+  var body=card.querySelector('.ci-body');
+  var btn=card.querySelector('.ci-expand-btn');
+  if(!body)return;
+  var collapsed=body.style.display==='none';
+  body.style.display=collapsed?'block':'none';
+  if(btn) btn.textContent=collapsed?'▲ Recolher':'▼ Expandir';
+}
+
+// ============================================================
+// RENDER PAINÉIS CONCLUÍDAS / CANCELADAS / EXCLUÍDAS
+// ============================================================
+function renderPanelCards(tipo, lista){
+  var configs={
+    conc:{panel:'panel-conc',badge:'badge-conc',list:'list-conc',bc:'#97C459',hbg:'var(--green-lt)',hc:'var(--green)',icon:'✅',label:'Concluído'},
+    canc:{panel:'panel-canc',badge:'badge-canc',list:'list-canc',bc:'#f09595',hbg:'var(--red-lt)',hc:'var(--red)',icon:'❌',label:'Cancelado'},
+    excl:{panel:'panel-excl',badge:'badge-excl',list:'list-excl',bc:'var(--g200)',hbg:'var(--g100)',hc:'var(--g400)',icon:'🗑',label:'Excluído'}
+  };
+  var cfg=configs[tipo];
+  var panel=document.getElementById(cfg.panel);
+  if(!lista.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  document.getElementById(cfg.badge).textContent=lista.length;
+  var listEl=document.getElementById(cfg.list);
+
+  listEl.innerHTML=[].concat(lista).reverse().map(function(s){
+    // Motivo especial (cancelamento, exclusão, reabertura)
+    var notasEspeciais='';
+    if(s.registros&&s.registros.length){
+      s.registros.filter(function(r){return r.obs&&(r.obs.indexOf('CANCELAMENTO:')>=0||r.obs.indexOf('REABERTURA:')>=0||r.obs.indexOf('EXCLUSÃO:')>=0||r.obs.indexOf('CONCLUSÃO:')>=0);}).forEach(function(r){
+        var isCanc=r.obs.indexOf('CANCELAMENTO:')>=0||r.obs.indexOf('EXCLUSÃO:')>=0;
+        notasEspeciais+='<div style="margin-top:8px;background:'+(isCanc?'var(--red-lt)':'var(--amber-lt)')+';border:1px solid '+(isCanc?'#f09595':'#EF9F27')+';border-radius:8px;padding:8px 12px;">'
+          +'<div class="conc-flbl" style="color:'+(isCanc?'var(--red)':'var(--amber)')+';">'+esc(r.obs.split(':')[0])+'</div>'
+          +'<div style="font-size:12px;margin-top:2px;">'+esc(r.obs.replace(/^[^:]+: /,''))+'</div>'
+        +'</div>';
+      });
+    }
+    // Mensagem adicional
+    var msgAdicional='';
+    if(s.msgAdicional){
+      msgAdicional='<div style="margin-top:8px;background:var(--green-lt);border:1px solid #97C459;border-radius:8px;padding:8px 12px;">'
+        +'<div class="conc-flbl" style="color:var(--green);">Mensagem adicional</div>'
+        +'<div style="font-size:12px;margin-top:2px;white-space:pre-wrap;">'+esc(s.msgAdicional)+'</div>'
+      +'</div>';
+    }
+    // Histórico registros
+    var regsHtml='';
+    if(s.registros&&s.registros.length){
+      regsHtml='<div style="margin-top:10px;">'
+        +'<div class="conc-flbl" style="margin-bottom:6px;">Histórico de registros</div>'
+        +s.registros.map(function(r){
+          return'<div style="border-left:3px solid '+cfg.bc+';padding:6px 10px;background:var(--g50);border-radius:0 6px 6px 0;margin-bottom:5px;">'
+            +'<div style="font-size:11px;font-weight:600;color:var(--g400);">'+esc(fmtD(r.data))+(r.autor?' · '+esc(r.autor):'')+'</div>'
+            +'<div style="font-size:12px;color:var(--g700);margin-top:1px;">'+esc(r.obs)+'</div>'
+          +'</div>';
+        }).join('')
+      +'</div>';
+    }
+    var emailBadge=s.emailEnviado
+      ?'<span class="email-badge email-sent">✉ '+esc(s.emailEnviadoEm||'')+'</span>'
+      :'<span class="email-badge email-not">✉ Sem e-mail</span>';
+
+    return'<div class="conc-card" style="border-color:'+cfg.bc+';" data-sol-id="'+esc(s.id)+'">'
+      +'<div class="conc-card-head" style="background:'+cfg.hbg+';border-color:'+cfg.bc+';cursor:pointer;" onclick="toggleConcItem(this)">'
+        +'<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">'
+          +'<span>'+cfg.icon+'</span>'
+          +'<div>'
+            +'<div class="conc-card-title" style="color:'+cfg.hc+';">'+esc(s.nome)+(s.brevidade==='Sim'?' <span style="background:var(--amber-lt);color:var(--amber);font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;border:1px solid #EF9F27;">🚨 URGENTE</span>':'')+'</div>'
+            +'<div style="font-size:11px;color:'+cfg.hc+';margin-top:2px;opacity:.8;">'+cfg.label+' em '+esc(s.concluidoEm||s.data||'—')+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+          +emailBadge
+          +'<button class="btn ci-expand-btn" style="font-size:11px;padding:3px 9px;background:transparent;border-color:'+cfg.bc+';color:'+cfg.hc+';" onclick="event.stopPropagation();toggleConcItem(this.closest(\'.conc-card\').querySelector(\'.conc-card-head\'))">▼ Expandir</button>'
+          +'<button class="btn" style="font-size:11px;padding:3px 9px;background:var(--amber-lt);color:var(--amber);border-color:#EF9F27;" data-reabrir-id="'+esc(s.id)+'" onclick="event.stopPropagation();abrirReabrir(this.dataset.reabrirId)">↩ Reabrir</button>'
+          +(tipo!=='excl'?'<button class="ib del" data-del-id="'+esc(s.id)+'" onclick="event.stopPropagation();abrirDelSol(this.dataset.delId)" style="width:26px;height:26px;flex-shrink:0;"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>':'')
+        +'</div>'
+      +'</div>'
+      +'<div class="ci-body" style="display:none;">'
+        +'<div class="conc-card-body">'
+          +'<div class="conc-grid">'
+            +'<div class="conc-field"><div class="conc-flbl">Nº Script</div><div class="conc-fval" style="font-family:monospace;">'+esc(s.numero||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Chamado</div><div class="conc-fval" style="font-family:monospace;">'+esc(s.chamado||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Categoria</div><div class="conc-fval"><span style="background:var(--blue-lt);color:var(--blue-dk);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">'+esc(s.cat||'—')+'</span></div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Gestor</div><div class="conc-fval" style="font-weight:500;color:var(--blue-dk);">'+esc(s.gestor||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Tipo</div><div class="conc-fval">'+esc(s.tipo||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Solicitante</div><div class="conc-fval">'+esc(s.solicitante||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">Data da solicitação</div><div class="conc-fval">'+esc(s.data||'—')+'</div></div>'
+            +'<div class="conc-field"><div class="conc-flbl">E-mail destinatários</div><div class="conc-fval" style="font-size:12px;">'+esc(s.emailDestinatarios||'—')+'</div></div>'
+            +'<div class="conc-field" style="grid-column:1/-1;"><div class="conc-flbl">Descrição</div><div class="conc-fval" style="white-space:pre-wrap;line-height:1.6;">'+esc(s.desc||'—')+'</div></div>'
+          +'</div>'
+          +msgAdicional
+          +notasEspeciais
+          +regsHtml
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+
 // ============================================================
 function filtrarGlobal(){
   var q=(document.getElementById('q-global').value||'').toLowerCase().trim();
@@ -856,112 +1022,6 @@ function filtrarGlobal(){
     }).join('');
 }
 
-
-var concCollapsed=false;
-function toggleConcPanel(){
-  concCollapsed=!concCollapsed;
-  var body=document.getElementById('conc-body');
-  var btn=document.getElementById('conc-toggle-btn');
-  body.style.display=concCollapsed?'none':'';
-  btn.textContent=concCollapsed?'Expandir ▼':'Recolher ▲';
-}
-
-function toggleConcItem(id){
-  var body=document.getElementById('conc-body-'+id);
-  var btn=document.getElementById('conc-btn-'+id);
-  if(!body)return;
-  var collapsed=body.style.display==='none';
-  body.style.display=collapsed?'block':'none';
-  btn.textContent=collapsed?'▲ Recolher':'▼ Expandir';
-}
-
-function renderConcluidasPanel(){
-  var concluidas=sols.filter(function(s){return s.status==='Concluída'||s.status==='Cancelada';});
-  var panel=document.getElementById('conc-panel');
-  if(!concluidas.length){panel.style.display='none';return;}
-  panel.style.display='block';
-  document.getElementById('conc-badge').textContent=concluidas.length;
-  var list=document.getElementById('conc-list');
-  list.innerHTML=[].concat(concluidas).reverse().map(function(s){
-    var isCanceled=s.status==='Cancelada';
-    var borderColor=isCanceled?'#f09595':'#97C459';
-    var headBg=isCanceled?'var(--red-lt)':'var(--green-lt)';
-    var headColor=isCanceled?'var(--red)':'var(--green)';
-    var statusIcon=isCanceled?'❌':'✅';
-    var emailBadge=s.emailEnviado
-      ?'<span class="email-badge email-sent">✉ E-mail enviado em '+esc(s.emailEnviadoEm||'')+'</span>'
-      :'<span class="email-badge email-not">✉ E-mail não enviado</span>';
-    // Cancelamento — motivo
-    var motivoCanc='';
-    if(isCanceled&&s.registros){
-      var rCanc=s.registros.filter(function(r){return r.obs&&r.obs.indexOf('CANCELAMENTO:')>=0;});
-      if(rCanc.length){motivoCanc='<div style="margin-top:10px;background:var(--red-lt);border:1px solid #f09595;border-radius:8px;padding:10px 12px;"><div class="conc-flbl" style="color:var(--red);">Motivo do cancelamento</div><div style="font-size:13px;color:var(--red);margin-top:2px;">'+esc(rCanc[0].obs.replace('❌ CANCELAMENTO: ',''))+'</div></div>';}
-    }
-    // Registros
-    var nreg=(s.registros&&s.registros.length)||0;
-    var regsHtml='';
-    if(nreg>0){
-      regsHtml='<div style="margin-top:10px;">'
-        +'<div class="conc-flbl" style="margin-bottom:6px;">Histórico de registros</div>'
-        +s.registros.map(function(r){
-          return'<div style="border-left:3px solid '+(isCanceled?'#f09595':'#97C459')+';padding:6px 10px;background:var(--g50);border-radius:0 6px 6px 0;margin-bottom:6px;">'
-            +'<div style="font-size:11px;font-weight:600;color:var(--g400);">'+esc(fmtD(r.data))+(r.autor?' · '+esc(r.autor):'')+'</div>'
-            +'<div style="font-size:12px;color:var(--g700);margin-top:2px;">'+esc(r.obs)+'</div>'
-          +'</div>';
-        }).join('')
-      +'</div>';
-    }
-    return'<div class="conc-card" style="border-color:'+borderColor+';">'
-      // CABEÇALHO com expand/collapse
-      +'<div class="conc-card-head" style="background:'+headBg+';border-color:'+borderColor+';cursor:pointer;" onclick="toggleConcItem(\''+s.id+'\')">'
-        +'<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">'
-          +'<span style="font-size:14px;">'+statusIcon+'</span>'
-          +'<div>'
-            +'<div class="conc-card-title" style="color:'+headColor+';">'+esc(s.nome)+'</div>'
-            +'<div style="font-size:11px;color:'+(isCanceled?'#A32D2D':'var(--green)')+';margin-top:2px;opacity:.8;">'
-              +(isCanceled?'Cancelado':'Concluído')+' em '+esc(s.concluidoEm||'—')
-            +'</div>'
-          +'</div>'
-        +'</div>'
-        +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">'
-          +emailBadge
-          +'<button id="conc-btn-'+s.id+'" class="btn" style="font-size:11px;padding:3px 10px;background:transparent;border-color:'+(isCanceled?'#f09595':'#97C459')+';color:'+headColor+';" onclick="event.stopPropagation();toggleConcItem(\''+s.id+'\')">▼ Expandir</button>'
-          +'<button class="ib del" title="Excluir" onclick="event.stopPropagation();abrirDelSol(\''+s.id+'\')" style="width:26px;height:26px;flex-shrink:0;"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
-        +'</div>'
-      +'</div>'
-      // CORPO — recolhido por padrão
-      +'<div id="conc-body-'+s.id+'" style="display:none;">'
-        +'<div class="conc-card-body">'
-          +'<div class="conc-grid">'
-            +'<div class="conc-field"><div class="conc-flbl">Nº Script</div><div class="conc-fval" style="font-family:monospace;">'+esc(s.numero||'—')+'</div></div>'
-            +'<div class="conc-field"><div class="conc-flbl">Chamado</div><div class="conc-fval" style="font-family:monospace;">'+esc(s.chamado||'—')+'</div></div>'
-            +'<div class="conc-field"><div class="conc-flbl">Categoria</div><div class="conc-fval"><span style="background:var(--blue-lt);color:var(--blue-dk);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">'+esc(s.cat||'—')+'</span></div></div>'
-            +'<div class="conc-field"><div class="conc-flbl">Gestor</div><div class="conc-fval" style="font-weight:500;color:var(--blue-dk);">'+esc(s.gestor||'—')+'</div></div>'
-            +'<div class="conc-field"><div class="conc-flbl">Tipo de atualização</div><div class="conc-fval">'+esc(s.tipo||'—')+'</div></div>'
-            +'<div class="conc-field"><div class="conc-flbl">Solicitante</div><div class="conc-fval">'+esc(s.solicitante||'—')+'</div></div>'
-            +'<div class="conc-field"><div class="conc-flbl">Data da solicitação</div><div class="conc-fval">'+esc(s.data||'—')+'</div></div>'
-            +'<div class="conc-field"><div class="conc-flbl">E-mail destinatários</div><div class="conc-fval" style="font-size:12px;">'+esc(s.emailDestinatarios||'—')+'</div></div>'
-            +'<div class="conc-field" style="grid-column:1/-1;"><div class="conc-flbl">Descrição</div><div class="conc-fval" style="white-space:pre-wrap;line-height:1.6;">'+esc(s.desc||'—')+'</div></div>'
-          +'</div>'
-          +motivoCanc
-          +regsHtml
-        +'</div>'
-      +'</div>'
-    +'</div>';
-  }).join('');
-}
-
-// ============================================================
-// TOGGLE PAINEL SOLICITAÇÕES ATIVAS
-// ============================================================
-var ppCollapsed=false;
-function togglePpanel(){
-  ppCollapsed=!ppCollapsed;
-  var body=document.getElementById('pp-body');
-  var btn=document.getElementById('pp-toggle-btn');
-  body.style.display=ppCollapsed?'none':'';
-  btn.textContent=ppCollapsed?'Expandir ▼':'Recolher ▲';
-}
 
 // ============================================================
 // NAVEGAÇÃO
@@ -1223,32 +1283,13 @@ function renderSols(){
     return mainRow+detRow;
   }).join('');
 }
-var delSolId=null;
-function abrirDelSol(id){
-  if(!podeEditar()) return;
-  delSolId=id;
-  var s=sols.filter(function(x){return x.id===id;})[0];
-  if(s) document.getElementById('del-sol-info').textContent=(s.numero?'Nº '+s.numero+' — ':'')+s.nome;
-  document.getElementById('del-sol-ov').classList.add('show');
-}
-function fecharDelSol(){document.getElementById('del-sol-ov').classList.remove('show');delSolId=null;}
-function confirmarDelSol(){
-  if(!delSolId)return;
-  var _delId=delSolId;
-  sols=sols.filter(function(s){return s.id!==_delId;});
-  deleteSolFromDB(_delId); updateStats();
-  document.getElementById('del-sol-ov').classList.remove('show');
-  delSolId=null;
-}
-
 var notifSolId=null;
 var cancSolId=null;
 var cancElRef=null;
 
 function mudarSol(id,status,el){
   if(status==='Cancelada'){
-    cancSolId=id;
-    cancElRef=el;
+    cancSolId=id; cancElRef=el;
     var s=sols.filter(function(x){return x.id===id;})[0];
     if(s){
       document.getElementById('canc-info').textContent='Nº: '+(s.numero||'—')+' — '+s.nome;
@@ -1265,15 +1306,16 @@ function mudarSol(id,status,el){
     }
   }
   if(el){el.className='sol-sel '+solClass(status);}
-  var _ms=sols.filter(function(x){return x.id===id;})[0]; if(_ms) saveSolItem(_ms);
+  var _ms=sols.filter(function(x){return x.id===id;})[0];
+  if(_ms) saveSolItem(_ms);
   updateStats();
   if(status==='Concluída'){
-    var s=sols.filter(function(x){return x.id===id;})[0];
-    if(s){
+    var s2=sols.filter(function(x){return x.id===id;})[0];
+    if(s2){
       notifSolId=id;
-      document.getElementById('notif-num').textContent=s.numero||'—';
-      document.getElementById('notif-nome').textContent=s.nome;
-      document.getElementById('notif-tipo').textContent=s.tipo;
+      document.getElementById('notif-num').textContent=s2.numero||'—';
+      document.getElementById('notif-nome').textContent=s2.nome;
+      document.getElementById('notif-tipo').textContent=s2.tipo;
       document.getElementById('notif-dest').value='';
       document.getElementById('notif-msg').value='';
       document.getElementById('notif-ov').classList.add('show');
@@ -1281,67 +1323,47 @@ function mudarSol(id,status,el){
   }
 }
 
-function fecharCanc(){
-  document.getElementById('canc-ov').classList.remove('show');
-  if(cancSolId && cancElRef){
-    var s=sols.filter(function(x){return x.id===cancSolId;})[0];
-    if(s){ cancElRef.value=s.status; cancElRef.className='sol-sel '+solClass(s.status); }
-  }
-  cancSolId=null; cancElRef=null;
-}
-
-function confirmarCanc(){
-  var motivo=document.getElementById('canc-motivo').value.trim();
-  if(!motivo){alert('Informe o motivo do cancelamento.');return;}
-  for(var i=0;i<sols.length;i++){
-    if(sols[i].id===cancSolId){
-      sols[i].status='Cancelada';
-      sols[i].concluidoEm=new Date().toLocaleDateString('pt-BR');
-      if(!sols[i].registros) sols[i].registros=[];
-      sols[i].registros.push({
-        data:new Date().toISOString().split('T')[0],
-        autor:'Sistema',
-        obs:'❌ CANCELAMENTO: '+motivo,
-        criadoEm:new Date().toISOString()
-      });
-      break;
+function cancelarConclusao(){
+  // Reverte status para Em andamento
+  if(notifSolId){
+    for(var i=0;i<sols.length;i++){
+      if(sols[i].id===notifSolId){
+        sols[i].status='Em andamento';
+        sols[i].concluidoEm=null;
+        saveSolItem(sols[i]);
+        break;
+      }
     }
+    updateStats();
   }
-  if(cancElRef){cancElRef.className='sol-sel '+solClass('Cancelada');}
-  document.getElementById('canc-ov').classList.remove('show');
-  var _cs=sols.filter(function(x){return x.id===cancSolId;})[0]; if(_cs) saveSolItem(_cs);
-  updateStats();
-  cancSolId=null; cancElRef=null;
-}
-
-function fecharNotif(){
-  // Fecha sem enviar — marca email como não enviado
   document.getElementById('notif-ov').classList.remove('show');
   notifSolId=null;
 }
 
+function fecharNotif(){ cancelarConclusao(); }
+
 function enviarNotificacao(){
   var dest=document.getElementById('notif-dest').value.trim();
-  if(!dest){alert('Informe ao menos um e-mail destinatário.');return;}
-  var s=sols.filter(function(x){return x.id===notifSolId;})[0];
-  if(!s){fecharNotif();return;}
   var msg=document.getElementById('notif-msg').value.trim();
-  var subj=encodeURIComponent('[Script Atualizado] Nº '+s.numero+' – '+s.nome);
+  if(!dest){alert('Informe ao menos um e-mail destinatário.');return;}
+  if(!msg){alert('A mensagem adicional é obrigatória.');return;}
+  var s=sols.filter(function(x){return x.id===notifSolId;})[0];
+  if(!s){document.getElementById('notif-ov').classList.remove('show');notifSolId=null;return;}
+  var subj=encodeURIComponent('[Script Atualizado] Nº '+(s.numero||'—')+' – '+s.nome);
   var body=encodeURIComponent(
     'Informativo — Script de Conhecimento Atualizado\n'
     +'=================================================\n\n'
-    +'Comunicamos que o script de conhecimento abaixo foi atualizado e já está disponível para consulta no portal.\n\n'
-    +'Nº do Script   : '+s.numero+'\n'
+    +'Comunicamos que o script abaixo foi atualizado.\n\n'
+    +'Nº do Script   : '+(s.numero||'—')+'\n'
     +'Nome do Script : '+s.nome+'\n'
-    +'Tipo de update : '+s.tipo+'\n'
+    +'Tipo de update : '+(s.tipo||'—')+'\n'
     +'Solicitado por : '+(s.solicitante||'—')+'\n'
     +'Concluído em   : '+new Date().toLocaleDateString('pt-BR')+'\n\n'
-    +(msg?'OBSERVAÇÕES:\n------------\n'+msg+'\n\n':'')
+    +'MENSAGEM ADICIONAL:\n--------------------\n'+msg+'\n\n'
     +'=================================================\n'
     +'Central de Suporte em TI — Base de Conhecimento\n'
-    +'Contato: basedeconhecimento@tcu.gov.br'
+    +'basedeconhecimento@tcu.gov.br'
   );
-  // Suporte a múltiplos destinatários separados por ;
   var destinatarios=dest.split(';').map(function(e){return e.trim();}).filter(Boolean).join(',');
   var mLink=document.createElement('a');
   mLink.href='mailto:'+encodeURIComponent(destinatarios)+'?subject='+subj+'&body='+body;
@@ -1349,19 +1371,104 @@ function enviarNotificacao(){
   document.body.appendChild(mLink);
   mLink.click();
   setTimeout(function(){document.body.removeChild(mLink);},500);
-  // Marca e-mail como enviado
+  // Salva msgAdicional e e-mail na solicitação
   for(var i=0;i<sols.length;i++){
     if(sols[i].id===notifSolId){
       sols[i].emailEnviado=true;
       sols[i].emailEnviadoEm=new Date().toLocaleDateString('pt-BR');
       sols[i].emailDestinatarios=dest;
+      sols[i].msgAdicional=msg;
+      saveSolItem(sols[i]);
       break;
     }
   }
-  var _ns=sols.filter(function(x){return x.id===notifSolId;})[0]; if(_ns) saveSolItem(_ns);
   updateStats();
   document.getElementById('notif-ov').classList.remove('show');
   notifSolId=null;
+}
+
+// Cancelamento
+function fecharCanc(){
+  document.getElementById('canc-ov').classList.remove('show');
+  if(cancSolId&&cancElRef){var s=sols.filter(function(x){return x.id===cancSolId;})[0];if(s){cancElRef.value=s.status;cancElRef.className='sol-sel '+solClass(s.status);}}
+  cancSolId=null;cancElRef=null;
+}
+function confirmarCanc(){
+  var motivo=document.getElementById('canc-motivo').value.trim();
+  if(!motivo){alert('Informe o motivo do cancelamento.');return;}
+  for(var i=0;i<sols.length;i++){
+    if(sols[i].id===cancSolId){
+      sols[i].status='Cancelada';
+      sols[i].concluidoEm=new Date().toLocaleDateString('pt-BR');
+      if(!sols[i].registros)sols[i].registros=[];
+      sols[i].registros.push({data:new Date().toISOString().split('T')[0],autor:'Sistema',obs:'CANCELAMENTO: '+motivo,criadoEm:new Date().toISOString()});
+      saveSolItem(sols[i]);
+      break;
+    }
+  }
+  if(cancElRef){cancElRef.className='sol-sel '+solClass('Cancelada');}
+  document.getElementById('canc-ov').classList.remove('show');
+  updateStats();
+  cancSolId=null;cancElRef=null;
+}
+
+// Reabrir
+var reabrirSolId=null;
+function abrirReabrir(id){
+  if(!podeEditar())return;
+  reabrirSolId=id;
+  var s=sols.filter(function(x){return x.id===id;})[0];
+  if(s) document.getElementById('reabrir-info').textContent=(s.numero?'Nº '+s.numero+' — ':'')+s.nome;
+  document.getElementById('reabrir-motivo').value='';
+  document.getElementById('reabrir-ov').classList.add('show');
+}
+function fecharReabrir(){document.getElementById('reabrir-ov').classList.remove('show');reabrirSolId=null;}
+function confirmarReabrir(){
+  var motivo=document.getElementById('reabrir-motivo').value.trim();
+  if(!motivo){alert('Informe o motivo da reabertura.');return;}
+  for(var i=0;i<sols.length;i++){
+    if(sols[i].id===reabrirSolId){
+      sols[i].status='Pendente';
+      sols[i].concluidoEm=null;
+      sols[i].emailEnviado=false;
+      sols[i].emailEnviadoEm=null;
+      if(!sols[i].registros)sols[i].registros=[];
+      sols[i].registros.push({data:new Date().toISOString().split('T')[0],autor:'Sistema',obs:'REABERTURA: '+motivo,criadoEm:new Date().toISOString()});
+      saveSolItem(sols[i]);
+      break;
+    }
+  }
+  document.getElementById('reabrir-ov').classList.remove('show');
+  updateStats();
+  reabrirSolId=null;
+}
+
+// Excluir — move para status Excluída (não deleta do banco)
+var delSolId=null;
+function abrirDelSol(id){
+  if(!podeEditar())return;
+  delSolId=id;
+  var s=sols.filter(function(x){return x.id===id;})[0];
+  if(s) document.getElementById('del-sol-info').textContent=(s.numero?'Nº '+s.numero+' — ':'')+s.nome;
+  document.getElementById('del-sol-ov').classList.add('show');
+}
+function fecharDelSol(){document.getElementById('del-sol-ov').classList.remove('show');delSolId=null;}
+function confirmarDelSol(){
+  if(!delSolId)return;
+  var _delId=delSolId;
+  for(var i=0;i<sols.length;i++){
+    if(sols[i].id===_delId){
+      sols[i].status='Excluída';
+      sols[i].concluidoEm=new Date().toLocaleDateString('pt-BR');
+      if(!sols[i].registros)sols[i].registros=[];
+      sols[i].registros.push({data:new Date().toISOString().split('T')[0],autor:'Sistema',obs:'EXCLUSÃO: Pedido excluído pelo gestor.',criadoEm:new Date().toISOString()});
+      saveSolItem(sols[i]);
+      break;
+    }
+  }
+  document.getElementById('del-sol-ov').classList.remove('show');
+  updateStats();
+  delSolId=null;
 }
 function atualizarGestor(){
   var cat=document.getElementById('at-cat').value;
@@ -1750,6 +1857,8 @@ var _salvarRegistro=salvarRegistro;
 salvarRegistro=function(){if(podeEditar())_salvarRegistro();};
 var _confirmarCanc=confirmarCanc;
 confirmarCanc=function(){if(podeEditar())_confirmarCanc();};
+var _confirmarReabrir=confirmarReabrir;
+confirmarReabrir=function(){if(podeEditar())_confirmarReabrir();};
 
 // ============================================================
 // ATUALIZAR DADOS MANUALMENTE
