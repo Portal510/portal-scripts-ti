@@ -95,6 +95,9 @@ tbody tr:hover td{background:var(--g50);}
 .sol-sel:focus{outline:none;border-color:var(--blue-mid);}
 .sol-sel.pend{border-color:#EF9F27;background:var(--amber-lt);color:var(--amber);font-weight:600;}
 .sol-sel.and{border-color:var(--blue-mid);background:var(--blue-lt);color:var(--blue-dk);font-weight:600;}
+.sol-sel.val{border-color:#7C3AED;background:#F5F3FF;color:#4C1D95;font-weight:600;}
+.sol-sel.res{border-color:#0891B2;background:#E0F2FE;color:#0C4A6E;font-weight:600;}
+.sol-sel.cri{border-color:#059669;background:#ECFDF5;color:#064E3B;font-weight:600;}
 .sol-sel.conc{border-color:#97C459;background:var(--green-lt);color:var(--green);font-weight:600;}
 .sol-sel.canc{border-color:var(--g200);background:var(--g100);color:var(--g400);font-weight:600;}
 .ract{display:flex;gap:4px;}
@@ -231,9 +234,6 @@ tbody tr:hover td{background:var(--g50);}
   .login-card{padding:28px 20px;}
 }
 </style>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -311,7 +311,9 @@ tbody tr:hover td{background:var(--g50);}
     <select id="q-global-status" class="flt" onchange="filtrarGlobal()">
       <option value="">Todos os status</option>
       <option value="Pendente">⏳ Pendente</option>
-      <option value="Em andamento">🔄 Em andamento</option>
+      <option value="Aguardando validação do Analista">🔍 Aguardando validação do Analista</option>
+      <option value="Aguardando resolução do chamado">⏰ Aguardando resolução do chamado</option>
+      <option value="Script em criação">✏️ Script em criação</option>
       <option value="Concluída">✅ Concluída</option>
       <option value="Cancelada">❌ Cancelada</option>
       <option value="Excluída">🗑 Excluída</option>
@@ -723,6 +725,9 @@ tbody tr:hover td{background:var(--g50);}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ============================================================
@@ -829,7 +834,7 @@ function seedScript(){
 // ============================================================
 function updateStats(){
   var pend=sols.filter(function(s){return s.status==='Pendente';}).length;
-  var and=sols.filter(function(s){return s.status==='Em andamento';}).length;
+  var and=sols.filter(function(s){return s.status==='Em andamento'||s.status==='Aguardando validação do Analista'||s.status==='Aguardando resolução do chamado'||s.status==='Script em criação';}).length;
   var conc=sols.filter(function(s){return s.status==='Concluída';}).length;
   var canc=sols.filter(function(s){return s.status==='Cancelada';}).length;
   document.getElementById('st-pend').textContent=pend;
@@ -837,7 +842,7 @@ function updateStats(){
   document.getElementById('st-conc').textContent=conc;
   document.getElementById('st-total').textContent=canc;
   // Painel ativas
-  var ativas=sols.filter(function(s){return s.status==='Pendente'||s.status==='Em andamento';});
+  var ativas=sols.filter(function(s){return s.status==='Pendente'||s.status==='Em andamento'||s.status==='Aguardando validação do Analista'||s.status==='Aguardando resolução do chamado'||s.status==='Script em criação';});
   var pp=document.getElementById('ppanel');
   if(ativas.length>0){
     pp.style.display='block';
@@ -1003,7 +1008,7 @@ function filtrarGlobal(){
       var isCanceled=s.status==='Cancelada';
       var isConc=s.status==='Concluída';
       var tagCls=solClass(s.status);
-      var icon=isCanceled?'❌':isConc?'✅':s.status==='Em andamento'?'🔄':'⏳';
+      var icon=isCanceled?'❌':isConc?'✅':s.status==='Aguardando validação do Analista'?'🔍':s.status==='Aguardando resolução do chamado'?'⏰':s.status==='Script em criação'?'✏️':'⏳';
       return'<div style="background:var(--white);border:1px solid var(--g100);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:center;">'
         +'<div>'
           +'<div style="font-size:11px;font-weight:600;color:var(--g400);margin-bottom:2px;">NOME DO SCRIPT</div>'
@@ -1189,7 +1194,7 @@ function confirmarDel(){
 // ============================================================
 // SOLICITAR ATUALIZAÇÃO
 // ============================================================
-function solClass(s){return{Pendente:'pend','Em andamento':'and',Concluída:'conc',Cancelada:'canc'}[s]||'pend';}
+function solClass(s){return{Pendente:'pend','Em andamento':'and','Aguardando validação do Analista':'val','Aguardando resolução do chamado':'res','Script em criação':'cri',Concluída:'conc',Cancelada:'canc',Excluída:'canc'}[s]||'pend';}
 function getGestor(cat){return cat==='Sistemas'?'José Luiz':'Marcus Marra';}
 
 function toggleSolRow(id){
@@ -1203,7 +1208,7 @@ function toggleSolRow(id){
 
 function renderSols(){
   var tb=document.getElementById('sol-tb');
-  var lista=[].concat(sols.filter(function(s){return s.status==='Pendente'||s.status==='Em andamento';})).reverse();
+  var lista=[].concat(sols.filter(function(s){return s.status==='Pendente'||s.status==='Em andamento'||s.status==='Aguardando validação do Analista'||s.status==='Aguardando resolução do chamado'||s.status==='Script em criação';})).reverse();
   if(!lista.length){tb.innerHTML='<tr><td colspan="5"><div class="empty">Nenhuma solicitação encontrada para este filtro.</div></td></tr>';return;}
   tb.innerHTML=lista.map(function(s){
     var cls=solClass(s.status);
@@ -1221,7 +1226,9 @@ function renderSols(){
       +'<td>'
         +'<select class="sol-sel '+cls+'" onchange="mudarSol(\''+s.id+'\',this.value,this)">'
           +'<option value="Pendente"'+(s.status==='Pendente'?' selected':'')+'>⏳ Pendente</option>'
-          +'<option value="Em andamento"'+(s.status==='Em andamento'?' selected':'')+'>🔄 Em andamento</option>'
+          +'<option value="Aguardando validação do Analista"'+(s.status==='Aguardando validação do Analista'?' selected':'')+'>🔍 Aguardando validação do Analista</option>'
+          +'<option value="Aguardando resolução do chamado"'+(s.status==='Aguardando resolução do chamado'?' selected':'')+'>⏰ Aguardando resolução do chamado</option>'
+          +'<option value="Script em criação"'+(s.status==='Script em criação'?' selected':'')+'>✏️ Script em criação</option>'
           +'<option value="Concluída"'+(s.status==='Concluída'?' selected':'')+'>✅ Concluída</option>'
           +'<option value="Cancelada"'+(s.status==='Cancelada'?' selected':'')+'>❌ Cancelada</option>'
         +'</select>'
@@ -1328,7 +1335,7 @@ function cancelarConclusao(){
   if(notifSolId){
     for(var i=0;i<sols.length;i++){
       if(sols[i].id===notifSolId){
-        sols[i].status='Em andamento';
+        sols[i].status='Pendente';
         sols[i].concluidoEm=null;
         saveSolItem(sols[i]);
         break;
