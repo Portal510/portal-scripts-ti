@@ -234,6 +234,10 @@ tbody tr:hover td{background:var(--g50);}
   .login-card{padding:28px 20px;}
 }
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -273,6 +277,7 @@ tbody tr:hover td{background:var(--g50);}
     <div class="nav-tabs" id="nav-tabs">
       <button class="ntab active" id="tab-gestao" onclick="goPage('gestao',this)">Gestão</button>
       <button class="ntab" id="tab-atualizar" onclick="goPage('atualizar',this)">Solicitar Atualização</button>
+      <button class="ntab" id="tab-validacao" onclick="goPage('validacao',this)">Validação de Scripts</button>
     </div>
     <div class="user-info">
       <div class="user-avatar" id="u-avatar"></div>
@@ -324,6 +329,7 @@ tbody tr:hover td{background:var(--g50);}
       ↑ Importar XLS
       <input type="file" id="import-xls" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importarXLS(this)"/>
     </label>
+    <button class="btn" id="btn-config-gestores" style="font-size:12px;padding:7px 14px;display:none;" onclick="abrirConfigGestores()">⚙️ Gestores</button>
   </div>
   <div id="global-results" style="display:none;margin-bottom:16px;"></div>
 
@@ -542,6 +548,156 @@ tbody tr:hover td{background:var(--g50);}
   </div>
 </div>
 
+
+<!-- ========== VALIDAÇÃO DE SCRIPTS ========== -->
+<div class="page" id="page-validacao">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <div style="font-size:16px;font-weight:600;color:var(--g900);">Acompanhamento de Validação de Scripts</div>
+      <div style="font-size:13px;color:var(--g400);margin-top:2px;">Prazo padrão: 3 dias úteis a partir da solicitação</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn prim" onclick="abrirNovaValidacao()">+ Nova Validação</button>
+      <button class="btn" style="font-size:12px;" onclick="exportarValidacaoXLS()">↓ Exportar XLS</button>
+    </div>
+  </div>
+
+  <!-- STATS VALIDAÇÃO -->
+  <div class="stats" style="margin-bottom:20px;">
+    <div class="scard"><div class="slbl">Total</div><div class="snum nb" id="val-st-total">0</div></div>
+    <div class="scard"><div class="slbl">Aguardando</div><div class="snum na" id="val-st-ag">0</div></div>
+    <div class="scard"><div class="slbl">Concluídas</div><div class="snum ng" id="val-st-conc">0</div></div>
+    <div class="scard"><div class="slbl">Vencidas</div><div class="snum" style="color:var(--red);" id="val-st-venc">0</div></div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="toolbar" style="margin-bottom:14px;">
+    <div class="sw">
+      <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="val-busca" placeholder="Buscar por colaborador, nº ou nome do script..." oninput="renderValidacoes()"/>
+    </div>
+    <select id="val-status-filt" class="flt" onchange="renderValidacoes()">
+      <option value="">Todos os status</option>
+      <option value="Aguardando validação">⏳ Aguardando validação</option>
+      <option value="Concluído">✅ Concluído</option>
+    </select>
+  </div>
+
+  <!-- TABELA -->
+  <div class="tcard">
+    <table>
+      <thead>
+        <tr>
+          <th>Data de Solicitação</th>
+          <th>Colaborador</th>
+          <th>Nº Script</th>
+          <th>Nome do Script</th>
+          <th>Prazo (dias)</th>
+          <th>Data Final</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="val-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL NOVA VALIDAÇÃO -->
+<div class="overlay" id="val-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;background:var(--blue-lt);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <span class="mtitle" id="val-modal-title">Nova Validação de Script</span>
+      </div>
+      <button class="mx" onclick="fecharValModal()">×</button>
+    </div>
+    <div class="fgrow">
+      <div class="fg"><label>Data de Solicitação <span style="color:var(--red)">*</span></label>
+        <input type="date" id="val-data-sol" oninput="calcularPrazoVal()"/>
+      </div>
+      <div class="fg"><label>Nome do Colaborador <span style="color:var(--red)">*</span></label>
+        <input type="text" id="val-colaborador" placeholder="Nome completo"/>
+      </div>
+    </div>
+    <div class="fgrow">
+      <div class="fg"><label>Nº do Script</label>
+        <input type="text" id="val-num-script" placeholder="Ex: 414242"/>
+      </div>
+      <div class="fg"><label>Prazo (dias úteis) <span style="color:var(--red)">*</span></label>
+        <input type="number" id="val-prazo" value="3" min="1" max="30" oninput="calcularPrazoVal()"/>
+      </div>
+    </div>
+    <div class="fg"><label>Nome do Script <span style="color:var(--red)">*</span></label>
+      <input type="text" id="val-nome-script" placeholder="Título do script a ser validado"/>
+    </div>
+    <div class="fgrow">
+      <div class="fg"><label>Data Final (calculada)</label>
+        <input type="date" id="val-data-final" readonly style="background:var(--g50);color:var(--g400);"/>
+      </div>
+      <div class="fg"><label>Status</label>
+        <select id="val-status">
+          <option value="Aguardando validação">⏳ Aguardando validação</option>
+          <option value="Concluído">✅ Concluído</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>Observações</label>
+      <textarea id="val-obs" rows="3" placeholder="Observações adicionais sobre a validação..." style="width:100%;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid var(--g200);border-radius:6px;background:var(--white);color:var(--g900);resize:none;"></textarea>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="fecharValModal()">Cancelar</button>
+      <button class="btn prim" onclick="salvarValidacao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIGURAR GESTORES -->
+<div class="overlay" id="config-gestores-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="mhead">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;background:var(--blue-lt);border-radius:6px;display:flex;align-items:center;justify-content:center;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <span class="mtitle">Configurar Gestores</span>
+      </div>
+      <button class="mx" onclick="fecharConfigGestores()">×</button>
+    </div>
+    <div style="background:var(--blue-lt);border:1px solid #B8D4F0;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue-dk);margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Os nomes serão atualizados automaticamente em todas as novas solicitações criadas.
+    </div>
+    <div class="fg">
+      <label>Gestor — Hardware / Software <span style="color:var(--red)">*</span></label>
+      <input type="text" id="cfg-gestor-hw" placeholder="Nome do gestor de Hardware/Software"/>
+    </div>
+    <div class="fg">
+      <label>Gestor — Sistemas <span style="color:var(--red)">*</span></label>
+      <input type="text" id="cfg-gestor-si" placeholder="Nome do gestor de Sistemas"/>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="fecharConfigGestores()">Cancelar</button>
+      <button class="btn prim" onclick="salvarConfigGestores()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR EXCLUIR VALIDAÇÃO -->
+<div class="overlay" id="val-del-modal">
+  <div class="modal" style="max-width:380px;">
+    <div class="mhead"><span class="mtitle">Excluir validação</span><button class="mx" onclick="fecharValDel()">×</button></div>
+    <p class="mbody">Deseja excluir esta validação? A ação não pode ser desfeita.</p>
+    <div class="mfoot">
+      <button class="btn" onclick="fecharValDel()">Cancelar</button>
+      <button class="btn dng" onclick="confirmarValDel()">Sim, excluir</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /main -->
 
 <!-- MODAL EXCLUIR PEDIDO -->
@@ -725,10 +881,6 @@ tbody tr:hover td{background:var(--g50);}
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ============================================================
 // ESTADO
@@ -750,6 +902,9 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
+// Força uso de cache local enquanto offline
+db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+db.enablePersistence().catch(function(){});
 var COL_SOLS = 'solicitacoes';
 var COL_SCRIPTS = 'scripts';
 
@@ -820,9 +975,9 @@ function seedScript(){
     area:'SESUC',status:'Ativo',
     resolucao:'Este procedimento descreve como alterar ou efetuar o reset de senha da rede TCU - Estagi\u00e1rio\nEste procedimento deve ser realizado dentro do desktop virtual - recomenda-se utilizar navegador Google Chrome\n\n1\u00ba Passo - Acessar o portal www.tcu.gov.br > Login > Alterar senha\n2\u00ba Passo - Clicar em "Alterar Senha"\n3\u00ba Passo - Clicar em "Esqueci minha senha"\n4\u00ba Passo - Informar login (XCPF ou e-mail), marcar captcha e clicar em ENVIAR\n5\u00ba Passo - Aparece mensagem de \u00eaxito\n6\u00ba Passo - Verificar e-mail particular cadastrado no portal TCU\n7\u00ba Passo - Se n\u00e3o recebeu: verificar SPAM e LIXEIRA\n8\u00ba Passo - Se continua sem receber: encaminhar para equipe N3\n9\u00ba Passo - Clicar no link para efetuar a troca\n10\u00ba Passo - Inserir nova senha e clicar em TROCAR\n11\u00ba Passo - Confirma\u00e7\u00e3o apresentada.',
     alteracoes:[
-      {data:'2021-06-16',resp:'Jos\u00e9 Luiz Oyapock Silva Andrade',cargo:'Gestor da Informa\u00e7\u00e3o'},
-      {data:'2021-06-23',resp:'Jos\u00e9 Luiz Oyapock Silva Andrade',cargo:'Gestor da Informa\u00e7\u00e3o'},
-      {data:'2021-07-23',resp:'Jos\u00e9 Luiz Oyapock Silva Andrade',cargo:'Gestor da Informa\u00e7\u00e3o'}
+      {data:'2021-06-16',resp:'Renato Lemos',cargo:'Gestor da Informa\u00e7\u00e3o'},
+      {data:'2021-06-23',resp:'Renato Lemos',cargo:'Gestor da Informa\u00e7\u00e3o'},
+      {data:'2021-07-23',resp:'Renato Lemos',cargo:'Gestor da Informa\u00e7\u00e3o'}
     ],
     updatedAt:'2021-07-23T12:00:00.000Z'
   }];
@@ -1195,7 +1350,55 @@ function confirmarDel(){
 // SOLICITAR ATUALIZAÇÃO
 // ============================================================
 function solClass(s){return{Pendente:'pend','Em andamento':'and','Aguardando validação do Analista':'val','Aguardando resolução do chamado':'res','Script em criação':'cri',Concluída:'conc',Cancelada:'canc',Excluída:'canc'}[s]||'pend';}
-function getGestor(cat){return cat==='Sistemas'?'José Luiz':'Marcus Marra';}
+// Gestores configuráveis (carregados do Firestore)
+var gestoresConfig = { hw: 'Marcus Marra', si: 'Renato Lemos' };
+
+function getGestor(cat){ return cat==='Sistemas' ? gestoresConfig.si : gestoresConfig.hw; }
+
+function loadGestoresConfig(){
+  db.collection('config').doc('gestores').get().then(function(doc){
+    if(doc.exists){
+      var d = doc.data();
+      if(d.hw) gestoresConfig.hw = d.hw;
+      if(d.si) gestoresConfig.si = d.si;
+    }
+  }).catch(function(){});
+}
+
+function editarGestorInline(input){
+  if(!podeEditar()) return;
+  var novoNome = input.value.trim();
+  if(!novoNome){ input.value = input.defaultValue; return; }
+  var id = input.dataset.solId;
+  for(var i=0;i<sols.length;i++){
+    if(sols[i].id===id){
+      sols[i].gestor = novoNome;
+      saveSolItem(sols[i]);
+      input.defaultValue = novoNome;
+      _mostrarNotificacao(false);
+      break;
+    }
+  }
+}
+
+function abrirConfigGestores(){
+  document.getElementById('cfg-gestor-hw').value = gestoresConfig.hw;
+  document.getElementById('cfg-gestor-si').value = gestoresConfig.si;
+  document.getElementById('config-gestores-modal').classList.add('show');
+}
+
+function fecharConfigGestores(){ document.getElementById('config-gestores-modal').classList.remove('show'); }
+
+function salvarConfigGestores(){
+  var hw = document.getElementById('cfg-gestor-hw').value.trim();
+  var si = document.getElementById('cfg-gestor-si').value.trim();
+  if(!hw||!si){ alert('Preencha os dois campos.'); return; }
+  gestoresConfig.hw = hw;
+  gestoresConfig.si = si;
+  db.collection('config').doc('gestores').set({ hw: hw, si: si }).catch(function(e){ console.error(e); });
+  fecharConfigGestores();
+  _mostrarNotificacao(false);
+}
 
 function toggleSolRow(id){
   var det=document.getElementById('sol-det-'+id);
@@ -1222,7 +1425,19 @@ function renderSols(){
       +'</td>'
       +'<td class="tc-s">'+esc(s.data)+'</td>'
       +'<td style="font-weight:500;font-size:13px;">'+esc(s.nome)+(s.brevidade==='Sim'?'&nbsp;<span style="background:#FAEEDA;color:var(--amber);font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;border:1px solid #EF9F27;vertical-align:middle;">🚨 URGENTE</span>':'')+'</td>'
-      +'<td class="tc-s" style="font-weight:500;color:var(--blue-dk);">'+esc(gestor)+'</td>'
+      +'<td style="min-width:140px;">'
+        +'<select data-sol-id="'+esc(s.id)+'" class="gestor-edit-select" onchange="editarGestorInline(this)" '
+          +'style="border:1px solid transparent;background:transparent;font-size:13px;font-family:inherit;font-weight:500;color:var(--blue-dk);width:100%;padding:3px 6px;border-radius:5px;cursor:pointer;appearance:auto;" '
+          +'onmouseover="this.style.borderColor=\'var(--blue-mid)\';this.style.background=\'var(--white)\'" '
+          +'onmouseout="if(document.activeElement!==this){this.style.borderColor=\'transparent\';this.style.background=\'transparent\';}" '
+          +'onfocus="this.style.borderColor=\'var(--blue-mid)\';this.style.background=\'var(--white)\'" '
+          +'onblur="this.style.borderColor=\'transparent\';this.style.background=\'transparent\'" '
+          +(currentUser&&currentUser.perfil!=='gestao'?'disabled ':'')+' >'
+          +'<option value="'+esc(gestoresConfig.hw)+'"'+(gestor===gestoresConfig.hw?' selected':'')+'>'+esc(gestoresConfig.hw)+'</option>'
+          +'<option value="'+esc(gestoresConfig.si)+'"'+(gestor===gestoresConfig.si?' selected':'')+'>'+esc(gestoresConfig.si)+'</option>'
+          +(gestor!==gestoresConfig.hw&&gestor!==gestoresConfig.si?'<option value="'+esc(gestor)+'" selected>'+esc(gestor)+'</option>':'')
+        +'</select>'
+        +'</td>'
       +'<td>'
         +'<select class="sol-sel '+cls+'" onchange="mudarSol(\''+s.id+'\',this.value,this)">'
           +'<option value="Pendente"'+(s.status==='Pendente'?' selected':'')+'>⏳ Pendente</option>'
@@ -1819,6 +2034,8 @@ function fazerLogin(){
   rl.className='user-role '+(u.perfil==='gestao'?'ur-gestao':'ur-colab');
   aplicarPermissoes();
   loadAll(); renderTable(); updateStats(); resetForm();
+  loadValidacoes();
+  loadGestoresConfig();
   iniciarAutoRefresh();
 }
 
@@ -1838,9 +2055,9 @@ function aplicarPermissoes(){
   // Banner somente leitura na gestão para colaborador
   var banner=document.getElementById('readonly-banner');
   if(banner) banner.classList.toggle('show',!isGestor);
-  // Botão + Novo Script
-  var btnNovo=document.querySelector('.btn.prim[onclick="novoScript()"]');
-  if(btnNovo) btnNovo.style.display=isGestor?'':'none';
+  // Mostra botão de configuração de gestores apenas para perfil gestao
+  var btnCfg = document.getElementById('btn-config-gestores');
+  if(btnCfg) btnCfg.style.display = isGestor ? 'inline-flex' : 'none';
   // Filtro de status (colaborador pode usar)
   // Aba gestão para colaborador: tabs já corretos, apenas bloquear ações de edição
 }
@@ -1979,6 +2196,209 @@ function importarXLS(input){
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+// ============================================================
+// ACOMPANHAMENTO DE VALIDAÇÃO DE SCRIPTS
+// ============================================================
+var COL_VAL = 'validacoes';
+var validacoes = [];
+var valEditId = null;
+var valDelId = null;
+
+function loadValidacoes(){
+  db.collection(COL_VAL).get().then(function(snap){
+    validacoes = [];
+    snap.forEach(function(doc){ validacoes.push(doc.data()); });
+    renderValidacoes();
+    updateValStats();
+  }).catch(function(e){ console.error(e); });
+}
+
+function saveValidacaoItem(v){
+  db.collection(COL_VAL).doc(v.id).set(v).catch(function(e){ console.error(e); });
+}
+
+function deleteValidacaoFromDB(id){
+  db.collection(COL_VAL).doc(id).delete().catch(function(e){ console.error(e); });
+}
+
+function calcularPrazoVal(){
+  var dataSol = document.getElementById('val-data-sol').value;
+  var prazo = parseInt(document.getElementById('val-prazo').value) || 3;
+  if(!dataSol){ document.getElementById('val-data-final').value=''; return; }
+  var d = new Date(dataSol + 'T12:00:00');
+  var count = 0;
+  while(count < prazo){
+    d.setDate(d.getDate()+1);
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) count++;
+  }
+  document.getElementById('val-data-final').value = d.toISOString().split('T')[0];
+}
+
+function abrirNovaValidacao(){
+  if(!podeEditar()) return;
+  valEditId = null;
+  document.getElementById('val-modal-title').textContent = 'Nova Validação de Script';
+  document.getElementById('val-data-sol').value = new Date().toISOString().split('T')[0];
+  document.getElementById('val-colaborador').value = '';
+  document.getElementById('val-num-script').value = '';
+  document.getElementById('val-nome-script').value = '';
+  document.getElementById('val-prazo').value = '3';
+  document.getElementById('val-status').value = 'Aguardando validação';
+  document.getElementById('val-obs').value = '';
+  calcularPrazoVal();
+  document.getElementById('val-modal').classList.add('show');
+}
+
+function editarValidacao(id){
+  if(!podeEditar()) return;
+  var v = validacoes.filter(function(x){ return x.id===id; })[0];
+  if(!v) return;
+  valEditId = id;
+  document.getElementById('val-modal-title').textContent = 'Editar Validação';
+  document.getElementById('val-data-sol').value = v.dataSol || '';
+  document.getElementById('val-colaborador').value = v.colaborador || '';
+  document.getElementById('val-num-script').value = v.numScript || '';
+  document.getElementById('val-nome-script').value = v.nomeScript || '';
+  document.getElementById('val-prazo').value = v.prazo || 3;
+  document.getElementById('val-data-final').value = v.dataFinal || '';
+  document.getElementById('val-status').value = v.status || 'Aguardando validação';
+  document.getElementById('val-obs').value = v.obs || '';
+  document.getElementById('val-modal').classList.add('show');
+}
+
+function fecharValModal(){ document.getElementById('val-modal').classList.remove('show'); valEditId=null; }
+
+function salvarValidacao(){
+  var dataSol = document.getElementById('val-data-sol').value;
+  var colaborador = document.getElementById('val-colaborador').value.trim();
+  var nomeScript = document.getElementById('val-nome-script').value.trim();
+  var prazo = parseInt(document.getElementById('val-prazo').value)||3;
+  if(!dataSol||!colaborador||!nomeScript){ alert('Preencha os campos obrigatórios: Data, Colaborador e Nome do Script.'); return; }
+  var obj = {
+    id: valEditId || uid(),
+    dataSol: dataSol,
+    colaborador: colaborador,
+    numScript: document.getElementById('val-num-script').value.trim(),
+    nomeScript: nomeScript,
+    prazo: prazo,
+    dataFinal: document.getElementById('val-data-final').value,
+    status: document.getElementById('val-status').value,
+    obs: document.getElementById('val-obs').value.trim(),
+    criadoEm: new Date().toISOString()
+  };
+  if(valEditId){
+    for(var i=0;i<validacoes.length;i++){ if(validacoes[i].id===valEditId){ validacoes[i]=obj; break; } }
+  } else {
+    validacoes.unshift(obj);
+  }
+  saveValidacaoItem(obj);
+  fecharValModal();
+  renderValidacoes();
+  updateValStats();
+}
+
+function abrirValDel(id){ if(!podeEditar()) return; valDelId=id; document.getElementById('val-del-modal').classList.add('show'); }
+function fecharValDel(){ document.getElementById('val-del-modal').classList.remove('show'); valDelId=null; }
+function confirmarValDel(){
+  if(!valDelId) return;
+  validacoes = validacoes.filter(function(v){ return v.id!==valDelId; });
+  deleteValidacaoFromDB(valDelId);
+  fecharValDel();
+  renderValidacoes();
+  updateValStats();
+}
+
+function isVencida(v){
+  if(v.status==='Concluído') return false;
+  if(!v.dataFinal) return false;
+  return new Date(v.dataFinal+'T23:59:59') < new Date();
+}
+
+function updateValStats(){
+  var total = validacoes.length;
+  var ag = validacoes.filter(function(v){ return v.status==='Aguardando validação' && !isVencida(v); }).length;
+  var conc = validacoes.filter(function(v){ return v.status==='Concluído'; }).length;
+  var venc = validacoes.filter(function(v){ return isVencida(v); }).length;
+  document.getElementById('val-st-total').textContent = total;
+  document.getElementById('val-st-ag').textContent = ag;
+  document.getElementById('val-st-conc').textContent = conc;
+  document.getElementById('val-st-venc').textContent = venc;
+}
+
+function renderValidacoes(){
+  var q = (document.getElementById('val-busca').value||'').toLowerCase();
+  var sf = document.getElementById('val-status-filt').value;
+  var rows = validacoes.filter(function(v){
+    var mq = !q || (v.colaborador||'').toLowerCase().indexOf(q)>=0 || (v.numScript||'').toLowerCase().indexOf(q)>=0 || (v.nomeScript||'').toLowerCase().indexOf(q)>=0;
+    var ms = !sf || v.status===sf;
+    return mq && ms;
+  });
+  var tb = document.getElementById('val-tbody');
+  if(!rows.length){ tb.innerHTML='<tr><td colspan="8"><div class="empty">Nenhuma validação encontrada.</div></td></tr>'; return; }
+  tb.innerHTML = rows.map(function(v){
+    var venc = isVencida(v);
+    var statusTag = v.status==='Concluído'
+      ? '<span class="tag at">✅ Concluído</span>'
+      : venc
+        ? '<span class="tag" style="background:var(--red-lt);color:var(--red);">⚠️ Vencida</span>'
+        : '<span class="tag rs">⏳ Aguardando validação</span>';
+    var rowStyle = venc && v.status!=='Concluído' ? 'background:#FFF5F5;' : '';
+    var diasRestantes = '';
+    if(v.status!=='Concluído' && v.dataFinal){
+      var diff = Math.ceil((new Date(v.dataFinal+'T23:59:59') - new Date()) / (1000*60*60*24));
+      diasRestantes = venc
+        ? '<span style="color:var(--red);font-size:11px;font-weight:600;">'+Math.abs(diff)+'d vencido</span>'
+        : '<span style="color:var(--green);font-size:11px;">'+diff+'d restante'+(diff!==1?'s':'')+'</span>';
+    }
+    return '<tr style="'+rowStyle+'">'
+      +'<td class="tc-s">'+esc(fmtD(v.dataSol))+'</td>'
+      +'<td style="font-weight:500;font-size:13px;">'+esc(v.colaborador||'—')+'</td>'
+      +'<td class="tc-n">'+esc(v.numScript||'—')+'</td>'
+      +'<td style="font-size:13px;">'+esc(v.nomeScript||'—')+'</td>'
+      +'<td class="tc-s" style="text-align:center;"><span style="background:var(--blue-lt);color:var(--blue-dk);font-size:12px;font-weight:600;padding:2px 10px;border-radius:20px;">'+esc(String(v.prazo||3))+'d</span></td>'
+      +'<td class="tc-s">'+esc(fmtD(v.dataFinal))+'<br/>'+diasRestantes+'</td>'
+      +'<td>'+statusTag+'</td>'
+      +'<td><div class="ract">'
+        +'<button class="ib" title="Editar" onclick="editarValidacao(\''+esc(v.id)+'\')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+        +'<button class="ib" title="Marcar Concluído" onclick="concluirValidacao(\''+esc(v.id)+'\')" style="'+(v.status==='Concluído'?'opacity:.3;pointer-events:none;':'')+'"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></button>'
+        +'<button class="ib del" title="Excluir" onclick="abrirValDel(\''+esc(v.id)+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>'
+      +'</div></td>'
+    +'</tr>';
+  }).join('');
+}
+
+function concluirValidacao(id){
+  if(!podeEditar()) return;
+  for(var i=0;i<validacoes.length;i++){
+    if(validacoes[i].id===id){ validacoes[i].status='Concluído'; saveValidacaoItem(validacoes[i]); break; }
+  }
+  renderValidacoes(); updateValStats();
+}
+
+function exportarValidacaoXLS(){
+  var rows=[['Data de Solicitação','Colaborador','Nº Script','Nome do Script','Prazo (dias)','Data Final','Status','Observações']];
+  validacoes.forEach(function(v){
+    rows.push([fmtD(v.dataSol),v.colaborador||'',v.numScript||'',v.nomeScript||'',v.prazo||3,fmtD(v.dataFinal),v.status||'',v.obs||'']);
+  });
+  var xml='<?xml version="1.0" encoding="UTF-8"?>'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +'<Styles><Style ss:ID="H"><Font ss:Bold="1"/><Interior ss:Color="#185FA5" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>'
+    +'<Worksheet ss:Name="Validações"><Table>';
+  rows.forEach(function(row,ri){
+    xml+='<Row>';
+    row.forEach(function(cell){ xml+='<Cell'+(ri===0?' ss:StyleID="H"':'')+'><Data ss:Type="String">'+String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</Data></Cell>'; });
+    xml+='</Row>';
+  });
+  xml+='</Table></Worksheet></Workbook>';
+  var blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='validacoes_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xls';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function _mostrarNotificacao(isNova){
